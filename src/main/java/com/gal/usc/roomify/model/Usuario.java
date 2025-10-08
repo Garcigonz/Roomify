@@ -9,5 +9,6 @@ public record Usuario  (
     String nombre,
     int habitacion,
     LocalDate nacimiento,
-    int telefono
+    int telefono,
+    String rol // "residente" o "admin"
 ) {}

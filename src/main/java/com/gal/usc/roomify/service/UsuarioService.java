@@ -20,7 +20,7 @@ public class UsuarioService {
     public UsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
 
-        // Prueba ejemplo
+       /* // Prueba ejemplo
         usuarioRepository.save(
                 new Usuario("58456425D",
                         "Pedro Mosque" +
@@ -28,7 +28,7 @@ public class UsuarioService {
                         007,
                         LocalDate.parse("2003-07-24"),
                         625900947)
-        );
+        );*/
     }
 
     // Servicio para añadir un nuevo usuario a la base de datos
@@ -43,8 +43,9 @@ public class UsuarioService {
 
     // Servicio para obtener un usuario de la base de datos
     public Usuario getUsuario(@NonNull String id) throws UsuarioNoEncontradoException {
-        if (usuarioRepository.existsById(id)) {
-            return usuarioRepository.findById(id);
+        Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
+        if (usuarioOpt.isPresent()) {
+            return usuarioOpt.get();
         } else {
             throw new UsuarioNoEncontradoException(id);
         }
