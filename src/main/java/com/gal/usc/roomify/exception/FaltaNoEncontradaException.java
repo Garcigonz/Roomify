@@ -1,13 +1,13 @@
 package com.gal.usc.roomify.exception;
 
 public class FaltaNoEncontradaException extends Exception {
-    private final int id;
+    private final String id;
 
-    public FaltaNoEncontradaException(int id) {
+    public FaltaNoEncontradaException(String id) {
         this.id = id;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 }
