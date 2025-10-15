@@ -10,4 +10,5 @@ import java.util.List;
 
 @Repository
 public interface FaltaRepository extends MongoRepository <@NonNull Falta, @NonNull String> {
+
 }
