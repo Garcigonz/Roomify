@@ -4,10 +4,18 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "faltas")
+
+enum Severidad{
+    LEVE,
+    MEDIO,
+    GRAVE,
+    MUY_GRAVE
+}
 public record Falta(
     @Id String id,      // Identificador de la falta
     String descripcion, // Descripción de la falta
     LocalDate fecha,    // Fecha en la que se interpuso
+    Severidad severidad,
     LocalDate fechaCaducidad, // Fecha en la que caduca la falta
     Usuario castigado // Usuario al que se le interpone una falta)
 ) {}
