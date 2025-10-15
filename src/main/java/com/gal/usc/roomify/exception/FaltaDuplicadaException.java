@@ -3,10 +3,10 @@ package com.gal.usc.roomify.exception;
 import com.gal.usc.roomify.model.Falta;
 
 
-public class FaltaDucplicadaException extends Throwable {
+public class FaltaDuplicadaException extends Throwable {
     public Falta falta;
 
-    public FaltaDucplicadaException(Falta falta) {
+    public FaltaDuplicadaException(Falta falta) {
         this.falta = falta;
     }
 
