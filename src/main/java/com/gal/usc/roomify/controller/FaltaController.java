@@ -1,6 +1,7 @@
 package com.gal.usc.roomify.controller;
 
 
+import com.gal.usc.roomify.exception.FaltaDuplicadaException;
 import com.gal.usc.roomify.exception.UsuarioDuplicadoException;
 import com.gal.usc.roomify.model.Falta;
 import com.gal.usc.roomify.service.FaltaService;
@@ -26,15 +27,15 @@ public class FaltaController {
     @PostMapping()
     public ResponseEntity<@NonNull Falta> addFalta(@RequestBody Falta falta) {
         try {
-            falta = faltaService.addfalta(falta);
+            falta = faltaService.addFalta(falta);
 
-            return ResponseEntity.created(MvcUriComponentsBuilder.fromMethodName(UsuarioController.class, "getUsuario", usuario.id()).build().toUri())
-                    .body(usuario);
-        } catch(UsuarioDuplicadoException e) {
+            return ResponseEntity.created(MvcUriComponentsBuilder.fromMethodName(FaltaController.class, "getFalta",falta.id()).build().toUri()).body(falta);
+        } catch(FaltaDuplicadaException e) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
-                    .location(MvcUriComponentsBuilder.fromMethodName(UsuarioController.class, "getUsuario", usuario.id()).build().toUri())
+                    .location(MvcUriComponentsBuilder.fromMethodName(FaltaController.class, "getFalta", falta.id()).build().toUri())
                     .build();
+
         }
     }
 }
