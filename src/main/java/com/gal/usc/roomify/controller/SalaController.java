@@ -1,5 +1,4 @@
 package com.gal.usc.roomify.controller;
-// ddd
 import com.gal.usc.roomify.exception.SalaDuplicadaException;
 import com.gal.usc.roomify.exception.SalaNoEncontradaException;
 import com.gal.usc.roomify.model.Sala;
@@ -33,6 +32,7 @@ public class SalaController {
     @PostMapping()
     public ResponseEntity<@NonNull Sala> addSala(@RequestBody Sala sala) {
         try {
+            // ?¿
             sala = salaService.addSala(sala);
             return ResponseEntity
                     .created(MvcUriComponentsBuilder.fromMethodName(SalaController.class, "getSala", sala.id()).build().toUri())
