@@ -2,9 +2,9 @@ package com.gal.usc.roomify.controller;
 
 
 import com.gal.usc.roomify.exception.FaltaDuplicadaException;
-import com.gal.usc.roomify.exception.UsuarioDuplicadoException;
 import com.gal.usc.roomify.model.Falta;
 import com.gal.usc.roomify.service.FaltaService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +21,7 @@ public class FaltaController {
 
     FaltaService faltaService;
 
+    @Autowired
     public FaltaController(FaltaService faltaService) { this.faltaService = faltaService; }
 
     // POST: Poner falta a un usuario

@@ -1,11 +1,8 @@
 package com.gal.usc.roomify.service;
 
-
 import com.gal.usc.roomify.exception.SalaDuplicadaException;
 import com.gal.usc.roomify.exception.SalaNoEncontradaException;
-import com.gal.usc.roomify.exception.UsuarioNoEncontradoException;
 import com.gal.usc.roomify.model.Sala;
-import com.gal.usc.roomify.model.Usuario;
 import com.gal.usc.roomify.repository.SalaRepository;
 import com.mongodb.lang.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;

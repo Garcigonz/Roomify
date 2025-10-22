@@ -11,9 +11,7 @@ import java.util.List;
 @Repository
 public interface FaltaRepository extends MongoRepository <@NonNull Falta, @NonNull String> {
 
-    Falta findById(@NonNull int id);
+    boolean existsById(String id);
 
-    boolean existsById(int id);
-
-    void deleteById(int id);
+    void deleteById(String id);
 }
