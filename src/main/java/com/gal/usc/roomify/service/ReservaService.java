@@ -8,26 +8,28 @@ import com.gal.usc.roomify.repository.SalaRepository;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
 @Service
 public class ReservaService {
     private final ReservaRepository reservaRepository;
-    private final SalaRepository salaRepository;
+    private final ObjectMapper mapper;
 
-    public ReservaService(ReservaRepository reservaRepository, SalaRepository salaRepository) {
+    public ReservaService(ReservaRepository reservaRepository, ObjectMapper mapper) {
         this.reservaRepository = reservaRepository;
-        this.salaRepository = salaRepository;
+        this.mapper = mapper;
     }
 
     // Servicio para añadir una nueva reserva a la base de datos
     public Reserva addReserva(Reserva nuevaReserva) throws ReservandoNoDisponibleException {
         // Buscar reservas que se solapen con la nueva reserva
         List<Reserva> reservasConflictivas = reservaRepository.findBySalaIdAndHoraInicioBeforeAndHoraFinAfter(
-                nuevaReserva.getSala().id(),
-                nuevaReserva.getHoraFin(),
-                nuevaReserva.getHoraInicio()
+                nuevaReserva.sala().id(),
+                nuevaReserva.horaFin(),
+                nuevaReserva.horaInicio()
         );
 
         if (!reservasConflictivas.isEmpty()) {
@@ -46,9 +48,19 @@ public class ReservaService {
     // Servicio para eliminar una reserva de la base de datos
     public void eliminarReserva(@NonNull String id) throws ReservaNoEncontradaException {
         if (reservaRepository.existsById(id)) {
-            salaRepository.deleteById(id);
+            reservaRepository.deleteById(id);
         } else {
             throw new ReservaNoEncontradaException(id);
         }
     }
+
+    //
+    public Reserva updateReserva(String id, List<JsonPatchOperation> cambios) throws ReservaNoEncontradaException {
+        Reserva reserva = reservaRepository.findById(id).orElseThrow(() -> new ReservaNoEncontradaException(id));
+        JsonNode patched = JsonPatch.apply(changes, mapper.convertValue(reserva, JsonNode.class));
+        Reserva updated = mapper.convertValue(patched, Reserva.class);
+        return reservaRepository.save(updated);
+    }
+
+
 }

@@ -41,12 +41,12 @@ public class ReservaController {
         try {
             nuevaReserva = reservaService.addReserva(nuevaReserva);
             return ResponseEntity
-                    .created(MvcUriComponentsBuilder.fromMethodName(ReservaController.class, "getReserva", nuevaReserva.getId()).build().toUri())
+                    .created(MvcUriComponentsBuilder.fromMethodName(ReservaController.class, "getReserva", nuevaReserva.id()).build().toUri())
                     .body(nuevaReserva);
         } catch (ReservandoNoDisponibleException e) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
-                    .location(MvcUriComponentsBuilder.fromMethodName(ReservaController.class, "getReserva", nuevaReserva.getId()).build().toUri())
+                    .location(MvcUriComponentsBuilder.fromMethodName(ReservaController.class, "getReserva", nuevaReserva.id()).build().toUri())
                     .build();
         }
     }
@@ -57,6 +57,15 @@ public class ReservaController {
             reservaService.eliminarReserva(idReserva);
             return ResponseEntity.noContent().build();
         } catch(ReservaNoEncontradaException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<@NonNull Reserva> updateReserva(@PathVariable("id") String id, @RequestBody List<JsonPatchOperation> changes) {
+        try {
+            return ResponseEntity.ok(reservaService.updateReserva(id, changes));
+        } catch (ReservaNoEncontradaException e) {
             return ResponseEntity.notFound().build();
         }
     }

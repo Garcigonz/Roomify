@@ -5,47 +5,26 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "reservas")
-public class Reserva {
-    @Id
-    private String id;
-    private Sala sala;
-    private LocalDateTime horaInicio;
-    private LocalDateTime horaFin;
-    private Usuario usuario;
-    private String observaciones;
-    private String estado;
-
-    // Constructor para crear nuevas reservas
-    public Reserva(Sala sala, LocalDateTime horaInicio, Usuario usuario, String observaciones) {
-        this.sala = sala;
-        this.horaInicio = horaInicio;
-        this.horaFin = horaInicio.plusHours(3); // Calcula automáticamente 3 horas después
-        this.usuario = usuario;
-        this.observaciones = observaciones;
+public record Reserva(
+        @Id String id,
+        Sala sala,
+        LocalDateTime horaInicio,
+        LocalDateTime horaFin,
+        Usuario usuario,
+        String observaciones
+) {
+    // Constructor compacto - valida y ajusta horaFin automáticamente
+    public Reserva {
+        // Si horaFin es null, la calculamos automáticamente
+        if (horaFin == null && horaInicio != null) {
+            horaFin = horaInicio.plusHours(3);
+        }
     }
 
-    public String getId() {
-        return id;
+    // Constructor de conveniencia para crear nuevas reservas
+    public Reserva(Sala sala, LocalDateTime horaInicio, Usuario usuario,
+                   String observaciones, String estado) {
+        this(null, sala, horaInicio, horaInicio.plusHours(3),
+                usuario, observaciones);
     }
-
-    public Sala getSala() {
-        return sala;
-    }
-
-    public LocalDateTime getHoraInicio() {
-        return horaInicio;
-    }
-
-    public LocalDateTime getHoraFin() {
-        return horaFin;
-    }
-
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public String getObservaciones() {
-        return observaciones;
-    }
-
 }
