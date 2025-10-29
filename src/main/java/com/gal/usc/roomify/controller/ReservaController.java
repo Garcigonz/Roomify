@@ -6,6 +6,7 @@ import com.gal.usc.roomify.exception.ReservandoNoDisponibleException;
 import com.gal.usc.roomify.model.Reserva;
 import com.gal.usc.roomify.repository.ReservaRepository;
 import com.gal.usc.roomify.service.ReservaService;
+import com.gal.usc.utils.patch.JsonPatchOperation;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.aggregation.StringOperators;
@@ -13,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+
+import java.util.List;
 
 
 @RestController
@@ -62,9 +65,9 @@ public class ReservaController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<@NonNull Reserva> updateReserva(@PathVariable("id") String id, @RequestBody List<JsonPatchOperation> changes) {
+    public ResponseEntity<@NonNull Reserva> updateReserva(@PathVariable("id") String id, @RequestBody List<JsonPatchOperation> cambios) {
         try {
-            return ResponseEntity.ok(reservaService.updateReserva(id, changes));
+            return ResponseEntity.ok(reservaService.updateReserva(id, cambios));
         } catch (ReservaNoEncontradaException e) {
             return ResponseEntity.notFound().build();
         }

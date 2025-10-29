@@ -5,6 +5,8 @@ import com.gal.usc.roomify.exception.ReservandoNoDisponibleException;
 import com.gal.usc.roomify.model.Reserva;
 import com.gal.usc.roomify.repository.ReservaRepository;
 import com.gal.usc.roomify.repository.SalaRepository;
+import com.gal.usc.utils.patch.JsonPatch;
+import com.gal.usc.utils.patch.JsonPatchOperation;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,7 +59,7 @@ public class ReservaService {
     //
     public Reserva updateReserva(String id, List<JsonPatchOperation> cambios) throws ReservaNoEncontradaException {
         Reserva reserva = reservaRepository.findById(id).orElseThrow(() -> new ReservaNoEncontradaException(id));
-        JsonNode patched = JsonPatch.apply(changes, mapper.convertValue(reserva, JsonNode.class));
+        JsonNode patched = JsonPatch.apply(cambios, mapper.convertValue(reserva, JsonNode.class));
         Reserva updated = mapper.convertValue(patched, Reserva.class);
         return reservaRepository.save(updated);
     }
