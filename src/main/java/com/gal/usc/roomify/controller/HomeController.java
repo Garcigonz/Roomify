@@ -1,4 +1,4 @@
-package com.gal.usc.roomify.controller;
+/*package com.gal.usc.roomify.controller;
 
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,4 +11,4 @@ public class HomeController {
     public String home() {
         return "¡Hola! Tu aplicación Spring Boot está corriendo correctamente 🎉";
     }
-}
+}*/

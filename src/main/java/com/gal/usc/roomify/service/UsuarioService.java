@@ -9,6 +9,8 @@ import com.gal.usc.roomify.model.Usuario;
 import com.gal.usc.roomify.repository.UsuarioRepository;
 import com.mongodb.lang.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -57,6 +59,18 @@ public class UsuarioService {
             usuarioRepository.deleteById(id);
         } else {
             throw new UsuarioNoEncontradoException(id);
+        }
+    }
+
+    public Page<Usuario> getUsuarios(String nombre, String rol, Pageable pageable) {
+        if (nombre != null && rol != null) {
+            return usuarioRepository.findByNombreContainingIgnoreCaseAndRol(nombre, rol, pageable);
+        } else if (nombre != null) {
+            return usuarioRepository.findByNombreContainingIgnoreCase(nombre, pageable);
+        } else if (rol != null) {
+            return usuarioRepository.findByRol(rol, pageable);
+        } else {
+            return usuarioRepository.findAll(pageable);
         }
     }
 }
