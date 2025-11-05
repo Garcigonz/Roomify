@@ -33,7 +33,7 @@ public class UsuarioController {
         } catch(UsuarioDuplicadoException e) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
-                    .location(MvcUriComponentsBuilder.fromMethodName(UsuarioController.class, "getBook", usuario.id()).build().toUri())
+                    .location(MvcUriComponentsBuilder.fromMethodName(UsuarioController.class, "getUsuario", usuario.id()).build().toUri())
                     .build();
         }
     }

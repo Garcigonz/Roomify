@@ -14,4 +14,5 @@ public interface FaltaRepository extends MongoRepository <@NonNull Falta, @NonNu
     boolean existsById(String id);
 
     void deleteById(String id);
+
 }

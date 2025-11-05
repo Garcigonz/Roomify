@@ -3,6 +3,8 @@ package com.gal.usc.roomify.service;
 import com.gal.usc.roomify.exception.SalaDuplicadaException;
 import com.gal.usc.roomify.exception.SalaNoEncontradaException;
 import com.gal.usc.roomify.model.Sala;
+import com.gal.usc.roomify.model.Usuario;
+import com.gal.usc.roomify.repository.FaltaRepository;
 import com.gal.usc.roomify.repository.SalaRepository;
 import com.mongodb.lang.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +21,10 @@ public class SalaService {
         this.salaRepository = salaRepository;
     }
 
+
     // Servicio para añadir una nueva sala a la base de datos
     public Sala addSala(@NonNull Sala sala) throws SalaDuplicadaException {
-        if (!salaRepository.existsById(sala.id())) {
+        if (!salaRepository.existsById(sala.getId())) {
             return salaRepository.save(sala);
         } else {
             throw new SalaDuplicadaException(sala);
@@ -45,4 +48,16 @@ public class SalaService {
             throw new SalaNoEncontradaException(id);
         }
     }
+
+    // Servicio para asignar Sala a un residente
+    public void asignarUsuario(@NonNull Usuario usuario, @NonNull Sala sala) {
+
+    }
+
+    // FUNCIONES AUXILIARES
+
+//    // Si un uduario tiene demasiadas faltas
+//    private boolean hayDemasiadasFaltas(@NonNull Usuario usuario,@NonNull Sala sala) {
+//        if(salaRepository.)
+//    }
 }
