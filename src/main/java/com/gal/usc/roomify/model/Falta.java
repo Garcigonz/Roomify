@@ -1,21 +1,15 @@
 package com.gal.usc.roomify.model;
+
 import java.time.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "faltas")
-
-enum Severidad{
-    LEVE,
-    MEDIO,
-    GRAVE,
-    MUY_GRAVE
-}
 public record Falta(
-    @Id String id,      // Identificador de la falta
-    String descripcion, // Descripción de la falta
-    LocalDate fecha,    // Fecha en la que se interpuso
-    Severidad severidad,
-    LocalDate fechaCaducidad, // Fecha en la que caduca la falta
-    Usuario castigado // Usuario al que se le interpone una falta)
+        @Id String id,
+        String descripcion,
+        LocalDate fecha,
+        Severidad severidad,
+        LocalDate fechaCaducidad,
+        java.util.Optional<@org.jspecify.annotations.NonNull Usuario> castigado
 ) {}

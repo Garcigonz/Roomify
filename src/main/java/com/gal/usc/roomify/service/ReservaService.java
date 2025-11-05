@@ -29,7 +29,7 @@ public class ReservaService {
     public Reserva addReserva(Reserva nuevaReserva) throws ReservandoNoDisponibleException {
         // Buscar reservas que se solapen con la nueva reserva
         List<Reserva> reservasConflictivas = reservaRepository.findBySalaIdAndHoraInicioBeforeAndHoraFinAfter(
-                nuevaReserva.sala().id(),
+                nuevaReserva.sala().getId(),
                 nuevaReserva.horaFin(),
                 nuevaReserva.horaInicio()
         );

@@ -35,12 +35,12 @@ public class SalaController {
             // ?¿
             sala = salaService.addSala(sala);
             return ResponseEntity
-                    .created(MvcUriComponentsBuilder.fromMethodName(SalaController.class, "getSala", sala.id()).build().toUri())
+                    .created(MvcUriComponentsBuilder.fromMethodName(SalaController.class, "getSala", sala.getId()).build().toUri())
                     .body(sala);
         } catch (SalaDuplicadaException e) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
-                    .location(MvcUriComponentsBuilder.fromMethodName(SalaController.class, "getSala", sala.id()).build().toUri())
+                    .location(MvcUriComponentsBuilder.fromMethodName(SalaController.class, "getSala", sala.getId()).build().toUri())
                     .build();
 
         }
