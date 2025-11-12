@@ -2,17 +2,20 @@ package com.gal.usc.roomify.controller;
 
 
 import com.gal.usc.roomify.exception.FaltaDuplicadaException;
+import com.gal.usc.roomify.exception.FaltaNoEncontradaException;
 import com.gal.usc.roomify.model.Falta;
 import com.gal.usc.roomify.service.FaltaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.jspecify.annotations.NonNull;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+
+import java.util.List;
 
 
 @RestController
@@ -39,4 +42,35 @@ public class FaltaController {
 
         }
     }
+
+    // GET: Obtener una falta por ID
+    @GetMapping("/{id}")
+    public ResponseEntity<@NonNull Falta> getFalta(@PathVariable String id) {
+        try {
+            return ResponseEntity.ok(faltaService.getFalta(id));
+        } catch (FaltaNoEncontradaException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // GET: Obtener lista de faltas paginada y ordenada
+    @GetMapping()
+    public ResponseEntity<@NonNull Page<@NonNull Falta>> getFaltas(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "sort", defaultValue = "fecha") List<String> sort
+    ) {
+        // Genera las reglas de ordenación (asc o desc)
+        Sort sorting = Sort.by(sort.stream()
+                .map(key -> key.startsWith("-")
+                        ? Sort.Order.desc(key.substring(1))
+                        : Sort.Order.asc(key))
+                .toList());
+
+        PageRequest pageable = PageRequest.of(page, size, sorting);
+        Page<Falta> faltas = faltaService.getFaltasPaginadas(pageable);
+
+        return ResponseEntity.ok(faltas);
+    }
+
 }

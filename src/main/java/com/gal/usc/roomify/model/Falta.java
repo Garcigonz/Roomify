@@ -13,3 +13,4 @@ public record Falta(
         LocalDate fechaCaducidad,
         java.util.Optional<@org.jspecify.annotations.NonNull Usuario> castigado
 ) {}
+

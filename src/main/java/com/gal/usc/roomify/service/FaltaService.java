@@ -8,11 +8,16 @@ import com.gal.usc.roomify.repository.FaltaRepository;
 import com.gal.usc.roomify.repository.UsuarioRepository;
 import com.mongodb.lang.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import com.gal.usc.roomify.model.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -56,6 +61,25 @@ public class FaltaService {
             throw new FaltaNoEncontradaException(id);
         }
     }
+
+    /**
+     * Obtiene todas las faltas de forma paginada
+     * @param page Configuración de paginación y ordenamiento
+     * @return Página de faltas
+     */
+    public Page<Falta> getFaltasPaginadas(PageRequest page) {
+        return faltaRepository.findAll(page);
+    }
+
+    /**
+     * Obtiene todas las faltas de un usuario específico
+     * @param usuarioId ID del usuario
+     * @return Lista de faltas del usuario
+     */
+    public Page<Falta> getFaltasPorUsuario(String usuarioId, PageRequest page) {
+        return faltaRepository.findByCastigadoId(usuarioId, page);
+    }
+
 
     
 }
