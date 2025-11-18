@@ -6,6 +6,7 @@ import com.gal.usc.roomify.model.Sala;
 import com.gal.usc.roomify.model.Usuario;
 import com.gal.usc.roomify.repository.FaltaRepository;
 import com.gal.usc.roomify.repository.SalaRepository;
+import com.gal.usc.roomify.repository.UsuarioRepository;
 import com.mongodb.lang.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,19 @@ public class SalaService {
     @Autowired
     public SalaService(SalaRepository salaRepository) {
         this.salaRepository = salaRepository;
+
+
+        salaRepository.save(new Sala(1, "Sala de reuniones pequeña", 20, null));
+        salaRepository.save(new Sala(2, "Sala de conferencias principal", 120, null));
+        salaRepository.save(new Sala(3, "Aula de informática 1", 30, null));
+        salaRepository.save(new Sala(4, "Aula de informática 2", 35, null));
+        salaRepository.save(new Sala(5, "Laboratorio de electrónica", 25, null));
+        salaRepository.save(new Sala(6, "Laboratorio de química", 20, null));
+        salaRepository.save(new Sala(7, "Sala multiuso", 50, null));
+        salaRepository.save(new Sala(8, "Auditorio", 200, null));
+        salaRepository.save(new Sala(9, "Oficina compartida", 12, null));
+        salaRepository.save(new Sala(10, "Sala de creatividad", 15, null));
+
     }
 
 
@@ -53,11 +67,4 @@ public class SalaService {
     public void asignarUsuario(@NonNull Usuario usuario, @NonNull Sala sala) {
 
     }
-
-    // FUNCIONES AUXILIARES
-
-//    // Si un uduario tiene demasiadas faltas
-//    private boolean hayDemasiadasFaltas(@NonNull Usuario usuario,@NonNull Sala sala) {
-//        if(salaRepository.)
-//    }
 }

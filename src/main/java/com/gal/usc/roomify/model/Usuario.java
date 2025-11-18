@@ -12,3 +12,4 @@ public record Usuario  (
     int telefono,
     String rol // "residente" o "admin"
 ) {}
+

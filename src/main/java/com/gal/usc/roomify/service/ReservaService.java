@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -26,17 +27,24 @@ public class ReservaService {
     private final ReservaRepository reservaRepository;
     private final UsuarioRepository usuarioRepository;
     private final FaltaRepository faltaRepository;
+    private final SalaRepository salaRepository;
     private final ObjectMapper mapper;
 
     @Autowired
     public ReservaService(ReservaRepository reservaRepository,
                           UsuarioRepository usuarioRepository,
                           FaltaRepository faltaRepository,
+                          SalaRepository salaRepository,
                           ObjectMapper mapper) {
         this.reservaRepository = reservaRepository;
         this.usuarioRepository = usuarioRepository;
         this.faltaRepository = faltaRepository;
+        this.salaRepository = salaRepository;
         this.mapper = mapper;
+
+        Reserva reserva = new Reserva("N1", salaRepository.findById(1), LocalDateTime.now(), LocalDateTime.now().plusMinutes(1), usuarioRepository.findById("58456425D").get(), "Ninguna");
+
+        reservaRepository.save(reserva);
     }
 
 
