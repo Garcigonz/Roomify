@@ -3,6 +3,7 @@ package com.gal.usc.roomify.controller;
 
 import com.gal.usc.roomify.exception.ReservaNoEncontradaException;
 import com.gal.usc.roomify.exception.ReservandoNoDisponibleException;
+import com.gal.usc.roomify.exception.UsuarioNoEncontradoException;
 import com.gal.usc.roomify.model.Reserva;
 import com.gal.usc.roomify.repository.ReservaRepository;
 import com.gal.usc.roomify.service.ReservaService;
@@ -40,7 +41,7 @@ public class ReservaController {
     }
 
     @PostMapping()
-    public ResponseEntity<@NonNull Reserva> addReserva(@RequestBody Reserva nuevaReserva) {
+    public ResponseEntity<@NonNull Reserva> addReserva(@RequestBody Reserva nuevaReserva) throws UsuarioNoEncontradoException {
         try {
             nuevaReserva = reservaService.addReserva(nuevaReserva);
             return ResponseEntity

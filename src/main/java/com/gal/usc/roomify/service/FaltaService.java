@@ -19,20 +19,10 @@ import java.util.Optional;
 public class FaltaService {
 
     private final FaltaRepository faltaRepository;
-    private final UsuarioRepository usuarioRepository;
 
     @Autowired
-    public FaltaService(FaltaRepository faltaRepository, UsuarioRepository usuarioRepository) {
+    public FaltaService(FaltaRepository faltaRepository) {
         this.faltaRepository = faltaRepository;
-        this.usuarioRepository = usuarioRepository;
-        Falta f1 = new Falta(
-                "f1",
-                "Llegó tarde a una reunión",
-                LocalDate.of(2025, 11, 1),
-                Severidad.LEVE,
-                LocalDate.of(2025, 12, 1),
-                usuarioRepository.findById("58456425D")
-        );
 
     }
 

@@ -1,8 +1,12 @@
 package com.gal.usc.roomify.model;
 
 import java.time.*;
+import java.util.Optional;
+
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
 
 @Document(collection = "faltas")
 public record Falta(
@@ -11,5 +15,5 @@ public record Falta(
         LocalDate fecha,
         Severidad severidad,
         LocalDate fechaCaducidad,
-        java.util.Optional<@org.jspecify.annotations.NonNull Usuario> castigado
+        Usuario castigado
 ) {}
