@@ -17,3 +17,4 @@ public record Falta(
         LocalDate fechaCaducidad,
         Usuario castigado
 ) {}
+
