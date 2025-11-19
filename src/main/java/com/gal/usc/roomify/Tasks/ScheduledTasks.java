@@ -58,4 +58,17 @@ public class ScheduledTasks {
             }
         }
     }
+
+    // TODO: Por eficiencia y sentido, Esta comprobación debería hacerse una vez al día.
+    @Scheduled(fixedRate = 20000)
+    public void limpiarFaltasCaducadas(){
+        List<Falta> faltas = faltaRepository.findAll();
+        // Buscamos todas las faltas caducadas y las eliminamos
+        for (Falta falta : faltas) {
+            if(falta.fechaCaducidad().isBefore(LocalDate.now())){
+                faltaRepository.delete(falta);
+            }
+        }
+    }
+
 }
