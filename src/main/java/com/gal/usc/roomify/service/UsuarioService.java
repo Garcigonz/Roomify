@@ -22,7 +22,7 @@ public class UsuarioService {
     public UsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
 
-        // Prueba ejemplo
+        /*// Prueba ejemplo
         usuarioRepository.save(new Usuario("58456425D","Pedro Mosquera Cerqueiro", 007, LocalDate.parse("2003-07-24"), 625900947, "residente"));
         usuarioRepository.save(new Usuario("52348961F", "Xenxo Fernandez Rodriguez", 101, LocalDate.parse("1998-03-12"), 612345678, "residente"));
         usuarioRepository.save(new Usuario("74215689K", "Andrés García López", 102, LocalDate.parse("2001-11-03"), 634567890, "visitante"));
@@ -35,13 +35,13 @@ public class UsuarioService {
         usuarioRepository.save(new Usuario("65214897B", "Lucía Romero Fernández", 109, LocalDate.parse("2003-01-25"), 677112233, "visitante"));
         usuarioRepository.save(new Usuario("73458912L", "Alberto Fernández Vázquez", 110, LocalDate.parse("1996-06-19"), 633556677, "residente"));
         usuarioRepository.save(new Usuario("82596431R", "Nerea Castro Martínez", 111, LocalDate.parse("2005-10-02"), 699887766, "residente"));
-        usuarioRepository.save(new Usuario("59421687S", "Pablo Rodríguez Iglesias", 112, LocalDate.parse("1994-07-07"), 655334422, "visitante"));
+        usuarioRepository.save(new Usuario("59421687S", "Pablo Rodríguez Iglesias", 112, LocalDate.parse("1994-07-07"), 655334422, "visitante"));*/
 
     }
 
     // Servicio para añadir un nuevo usuario a la base de datos
     public Usuario addUsuario(@NonNull Usuario usuario) throws UsuarioDuplicadoException {
-        if (!usuarioRepository.existsById(usuario.id())) {
+        if (!usuarioRepository.existsById(usuario.getId())) {
             return usuarioRepository.save(usuario);
         } else {
             throw new UsuarioDuplicadoException(usuario);

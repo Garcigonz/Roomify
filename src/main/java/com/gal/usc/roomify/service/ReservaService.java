@@ -57,13 +57,13 @@ public class ReservaService {
                 nuevaReserva.horaInicio()
         );
 
-        Usuario usuario = usuarioRepository.findById(nuevaReserva.usuario().id()).orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
+        Usuario usuario = usuarioRepository.findById(nuevaReserva.usuario().getId()).orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
         if (!reservasConflictivas.isEmpty()) {
             throw new ReservandoNoDisponibleException(nuevaReserva);
         }
 
         // Contamos cuantas faltas tiene el Usuario
-        long faltasCount = faltaRepository.countByCastigadoId(usuario.id());
+        long faltasCount = faltaRepository.countByCastigadoId(usuario.getId());
 
         try{
             // Si tiene 3 faltas o más, LANZAMOS EXCEPCIÓN

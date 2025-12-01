@@ -71,7 +71,7 @@ public class UsuarioController {
                             MvcUriComponentsBuilder.fromMethodName(
                                     UsuarioController.class,
                                     "getUsuario",
-                                    usuario.id()
+                                    usuario.getId()
                             ).build().toUri())
                     .body(usuario);
         } catch (UsuarioDuplicadoException e) {
@@ -79,7 +79,7 @@ public class UsuarioController {
                     .location(MvcUriComponentsBuilder.fromMethodName(
                                     UsuarioController.class,
                                     "getUsuario",
-                                    usuario.id())
+                                    usuario.getId())
                             .build().toUri())
                     .build();
         }
