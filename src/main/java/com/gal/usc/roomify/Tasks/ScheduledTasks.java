@@ -38,11 +38,6 @@ public class ScheduledTasks {
         this.mapper = mapper;
     }
 
-    @Scheduled(fixedRate = 5000)
-    public void reportCurrentTime() {
-        log.info("The time is now {}", dateFormat.format(new Date()));
-    }
-
     @Scheduled(fixedRate = 20000)
     public void asignarFaltas() {
         List<Reserva> reservas = reservaRepository.findAll();
@@ -54,7 +49,7 @@ public class ScheduledTasks {
                 Falta falta = new Falta("N1","Ha entregado tarde la llave de la sala " + reserva.sala().getId(), LocalDate.now(), Severidad.LEVE,LocalDate.now().plusMonths(6), castigado);
                 faltaRepository.save(falta);
                 reservaRepository.delete(reserva);
-                log.info("HAY CASTIGADO");
+
             }
         }
     }

@@ -1,7 +1,10 @@
 package com.gal.usc.roomify.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.ViewOptions;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,7 +24,7 @@ public class Usuario implements UserDetails {
 
     private String nombre;
 
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     // Guarda solo los IDs de los roles en la colección 'usuarios',

@@ -1,7 +1,7 @@
 package com.gal.usc.roomify.controller;
 
 import com.gal.usc.roomify.exception.UsuarioDuplicadoException;
-import com.gal.usc.roomify.model.Usuario;
+import com.gal.usc.roomify.model.*;
 import com.gal.usc.roomify.service.AuthenticationService;
 import com.gal.usc.roomify.service.UsuarioService; // <--- Necesitarás crear este servicio
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,16 +29,17 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestBody Usuario usuario) {
-        // 1. Autenticamos usando el servicio que ya configuramos
-        Authentication auth = authenticationService.login(usuario);
+    public ResponseEntity<Void> login(@RequestBody LoginRequest request) {
 
-        // 2. Generamos el token JWT
+        Authentication auth = authenticationService.login(
+                request.id(),
+                request.password()
+        );
+
         String token = authenticationService.generateJWT(auth);
 
-        // 3. Devolvemos una respuesta vacía (204 No Content) pero con el token en la cabecera
         return ResponseEntity.noContent()
-                .headers(headers -> headers.setBearerAuth(token))
+                .headers(h -> h.setBearerAuth(token))
                 .build();
     }
 

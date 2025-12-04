@@ -63,10 +63,10 @@ public class AuthenticationService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
     }
 
-    public Authentication login(Usuario user) throws AuthenticationException {
+    public Authentication login(String username, String password) throws AuthenticationException {
         // 3. CAMBIO: Corrección de sintaxis de getters (getId y getPassword)
         return authenticationManager.authenticate(
-                UsernamePasswordAuthenticationToken.unauthenticated(user.getId(), user.getPassword())
+                UsernamePasswordAuthenticationToken.unauthenticated(username, password)
         );
     }
 

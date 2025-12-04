@@ -41,10 +41,6 @@ public class ReservaService {
         this.faltaRepository = faltaRepository;
         this.salaRepository = salaRepository;
         this.mapper = mapper;
-
-        Reserva reserva = new Reserva("N1", salaRepository.findById(1), LocalDateTime.now(), LocalDateTime.now().plusMinutes(1), usuarioRepository.findById("58456425D").get(), "Ninguna");
-
-        reservaRepository.save(reserva);
     }
 
 
