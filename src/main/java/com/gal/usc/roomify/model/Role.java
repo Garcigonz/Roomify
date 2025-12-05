@@ -1,23 +1,29 @@
 package com.gal.usc.roomify.model;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
+
+import jakarta.persistence.*;
 
 import java.util.Set;
 
-@Document(collection = "roles")
+@Entity
+@Table(name = "roles")
 @SuppressWarnings("unused")
 public class Role {
-
     @Id
     private String rolename;
 
-    @DBRef
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "role_hierarchy",
+            joinColumns = @JoinColumn(name = "role"),
+            inverseJoinColumns = @JoinColumn(name = "includes"))
     private Set<Role> includes;
 
-    // Igual aquí, guardamos referencias a los documentos de 'permissions'.
-    @DBRef
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "role_permissions",
+            joinColumns = @JoinColumn(name = "role"),
+            inverseJoinColumns = @JoinColumn(name = "permission"))
     private Set<Permission> permissions;
 
     public Role() { }
@@ -48,5 +54,4 @@ public class Role {
         this.includes = includes;
         return this;
     }
-
 }

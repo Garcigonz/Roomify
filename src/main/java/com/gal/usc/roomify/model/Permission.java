@@ -1,12 +1,11 @@
 package com.gal.usc.roomify.model;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.*;
 
 @SuppressWarnings("unused")
-@Document(collection = "permissions")
+@Entity
+@Table(name = "permissions")
 public class Permission {
-
     @Id
     private String id;
     private String resource;
@@ -41,12 +40,13 @@ public class Permission {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return resource+":"+action;
+    }
+
     public String getName() {
         return this.toString();
     }
 
-    @Override
-    public String toString() {
-        return resource + ":" + action;
-    }
 }

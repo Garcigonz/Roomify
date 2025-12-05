@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -20,18 +21,20 @@ import java.util.stream.Collectors;
 public class Usuario implements UserDetails {
 
     @Id
+    @JsonView(Views.Public.class)
     private String id;
 
-    private String nombre;
-
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonView(Views.Private.class)
     private String password;
 
-    // Guarda solo los IDs de los roles en la colección 'usuarios',
-    // pero trae el objeto completo al cargarlo en Java.
-    @DBRef
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_roles",
+            joinColumns = @JoinColumn(name = "username"),
+            inverseJoinColumns = @JoinColumn(name = "role"))
+    @JsonView(Views.Private.class)
     private Set<Role> roles;
 
+    private String nombre;
     private int habitacion;
     private LocalDate nacimiento;
     private int telefono;
