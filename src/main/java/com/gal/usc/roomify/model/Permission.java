@@ -1,10 +1,12 @@
 package com.gal.usc.roomify.model;
 
-import jakarta.persistence.*;
 
-@SuppressWarnings("unused")
-@Entity
-@Table(name = "permissions")
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+
+@Document(collection = "permissions")
 public class Permission {
     @Id
     private String id;

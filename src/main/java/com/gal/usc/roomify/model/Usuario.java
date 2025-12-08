@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import jakarta.persistence.*;
+
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -20,6 +20,11 @@ import java.util.stream.Collectors;
 @Document(collection = "usuarios")
 public class Usuario implements UserDetails {
 
+    public interface Views {
+        interface Public {}
+        interface Private extends Public {}
+    }
+
     @Id
     @JsonView(Views.Public.class)
     private String id;
@@ -27,10 +32,7 @@ public class Usuario implements UserDetails {
     @JsonView(Views.Private.class)
     private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_roles",
-            joinColumns = @JoinColumn(name = "username"),
-            inverseJoinColumns = @JoinColumn(name = "role"))
+
     @JsonView(Views.Private.class)
     private Set<Role> roles;
 

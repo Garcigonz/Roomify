@@ -1,12 +1,38 @@
 ###
+POST http://localhost:8080/auth/register
+Content-Type: application/json
+
+{
+  "id": "Usuario_2",
+  "password": "{noop}1234"
+}
+
+
+###
 POST http://localhost:8080/auth/login
 Content-Type: application/json
 
 {
-  "id": "comisario_45",
+  "id": "Usuario_2",
   "password": "1234"
 }
 
 ###
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "id": "Root",
+  "password": "1234"
+}
+###
 GET http://localhost:8080/usuarios
-Authorization: Bearer eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJjb21pc2FyaW9fNDUiLCJpYXQiOjE3NjQ5NTIzNzgsImV4cCI6MTc2NDk1MzI3OCwibmJmIjoxNzY0OTUyMzc4LCJyb2xlcyI6W119.IcRZbQuWQh59KPBpHcByifAgoLguh4rA0RWXduksOv0y31Eg6u6gz0vr8G8MIvmf_GadDPFN6D-Won5DWk1EDg
+Authorization: Bearer eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJSb290IiwiaWF0IjoxNzY1MjEwMjE5LCJleHAiOjE3NjUyMTExMTksIm5iZiI6MTc2NTIxMDIxOSwicm9sZXMiOlsiUk9MRV9BRE1JTiJdfQ._fXbeoGvpzBURygRiGraFRfdQ_V14ywinX3ZoXAyPJWIDOnQt5ppz_1ATnGFCsoTskgYUBpVd3AJR_4kwQHHDQ
+
+###
+GET http://localhost:8080/usuarios/Usuario_1
+Authorization: Bearer eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJSb290IiwiaWF0IjoxNzY1MjEwMjE5LCJleHAiOjE3NjUyMTExMTksIm5iZiI6MTc2NTIxMDIxOSwicm9sZXMiOlsiUk9MRV9BRE1JTiJdfQ._fXbeoGvpzBURygRiGraFRfdQ_V14ywinX3ZoXAyPJWIDOnQt5ppz_1ATnGFCsoTskgYUBpVd3AJR_4kwQHHDQ
+
+###
+DELETE http://localhost:8080/usuarios/Usuario_2
+Authorization: Bearer eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJSb290IiwiaWF0IjoxNzY1MjEwMjE5LCJleHAiOjE3NjUyMTExMTksIm5iZiI6MTc2NTIxMDIxOSwicm9sZXMiOlsiUk9MRV9BRE1JTiJdfQ._fXbeoGvpzBURygRiGraFRfdQ_V14ywinX3ZoXAyPJWIDOnQt5ppz_1ATnGFCsoTskgYUBpVd3AJR_4kwQHHDQ
