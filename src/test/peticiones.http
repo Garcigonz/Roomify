@@ -36,3 +36,15 @@ Authorization: Bearer eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJSb290IiwiaWF0IjoxNzY1MjEwM
 ###
 DELETE http://localhost:8080/usuarios/Usuario_2
 Authorization: Bearer eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJSb290IiwiaWF0IjoxNzY1MjEwMjE5LCJleHAiOjE3NjUyMTExMTksIm5iZiI6MTc2NTIxMDIxOSwicm9sZXMiOlsiUk9MRV9BRE1JTiJdfQ._fXbeoGvpzBURygRiGraFRfdQ_V14ywinX3ZoXAyPJWIDOnQt5ppz_1ATnGFCsoTskgYUBpVd3AJR_4kwQHHDQ
+
+###
+POST http://localhost:8080/salas
+Authorization: Bearer eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJSb290IiwiaWF0IjoxNzY1MjExNDcyLCJleHAiOjE3NjUyMTIzNzIsIm5iZiI6MTc2NTIxMTQ3Miwicm9sZXMiOlsiUk9MRV9BRE1JTiJdfQ.vmDK6j4nbj9QrF5zYbWK_Km-1DHsN4PrOk7tJ7SKzjWkw4WsUXTGIxnEzdIe0QmKUwQkXJ8_KCBBay5_7pE8Dw
+Content-Type: application/json
+
+{
+    "id": 1254,
+    "aforo": 12,
+    "descripcion": "Sala músical con Batería",
+    "responsableActual": null
+}
