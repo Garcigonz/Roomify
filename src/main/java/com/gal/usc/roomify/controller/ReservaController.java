@@ -55,8 +55,8 @@ public class ReservaController {
         }
     }
 
-    @DeleteMapping()
-    public ResponseEntity<@NonNull Reserva> deleteReserva(@RequestBody String idReserva) {
+    @DeleteMapping("/{idReserva}")
+    public ResponseEntity<@NonNull Reserva> deleteReserva(@PathVariable String idReserva) {
         try {
             reservaService.eliminarReserva(idReserva);
             return ResponseEntity.noContent().build();

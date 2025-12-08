@@ -3,7 +3,7 @@ POST http://localhost:8080/auth/register
 Content-Type: application/json
 
 {
-  "id": "Usuario_2",
+  "id": "Usuario_3",
   "password": "{noop}1234"
 }
 
@@ -48,3 +48,22 @@ Content-Type: application/json
     "descripcion": "Sala músical con Batería",
     "responsableActual": null
 }
+
+###
+POST http://localhost:8080/reservas
+Authorization: Bearer eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJVc3VhcmlvXzIiLCJpYXQiOjE3NjUyMTc1MzIsImV4cCI6MTc2NTIxODQzMiwibmJmIjoxNzY1MjE3NTMyLCJyb2xlcyI6WyJST0xFX1VTRVIiXX0.Qjj_3ybRYM8jB2Os0MwYJcKPir6LJbn_HF66f4446tyhKRU7hCQ01pv7t7z4TNpfq0uOtai2F_QHq1BJIIkqDw
+Content-Type: application/json
+
+{
+  "id": "ID2",
+  "sala": {
+    "id": 3
+  },
+  "usuario": {
+    "id": "Usuario_2"
+  }
+}
+
+###
+DELETE http://localhost:8080/reservas/ID2
+Authorization: Bearer eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJVc3VhcmlvXzIiLCJpYXQiOjE3NjUyMTg2MjksImV4cCI6MTc2NTIxOTUyOSwibmJmIjoxNzY1MjE4NjI5LCJyb2xlcyI6WyJST0xFX1VTRVIiXX0.-mW3SHoAV5PnP2yW4b-CbLjXpANTGH_wwQ8Xf2l4wAoLzzFcrFYDQrBViKqJwvVdbHgFEVLGwK914PS95-eZCg
