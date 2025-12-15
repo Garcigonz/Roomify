@@ -5,27 +5,26 @@ import java.util.*;
 
 import com.gal.usc.roomify.exception.UsuarioDuplicadoException;
 import com.gal.usc.roomify.exception.UsuarioNoEncontradoException;
-import com.gal.usc.roomify.model.Role;
 import com.gal.usc.roomify.model.Usuario;
-import com.gal.usc.roomify.repository.RoleRepository;
 import com.gal.usc.roomify.repository.UsuarioRepository;
 import com.mongodb.lang.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
-    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UsuarioService(UsuarioRepository usuarioRepository, RoleRepository roleRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
-        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
+
         /*// Prueba ejemplo
         usuarioRepository.save(new Usuario("58456425D","Pedro Mosquera Cerqueiro", 007, LocalDate.parse("2003-07-24"), 625900947, "residente"));
         usuarioRepository.save(new Usuario("52348961F", "Xenxo Fernandez Rodriguez", 101, LocalDate.parse("1998-03-12"), 612345678, "residente"));
@@ -45,17 +44,17 @@ public class UsuarioService {
 
     // Servicio para añadir un nuevo usuario a la base de datos
     public Usuario addUsuario(@NonNull Usuario usuario) throws UsuarioDuplicadoException {
-        if (!usuarioRepository.existsById(usuario.getId())) {
-            Role userRole = roleRepository.findByRolename("USER");
-            usuario.setRoles(Set.of(userRole));
-            return usuarioRepository.save(usuario);
-        } else {
+        if (usuarioRepository.existsById(usuario.getId())) {
+            // si ya existe
             throw new UsuarioDuplicadoException(usuario);
         }
+
+        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+
+        return usuarioRepository.save(usuario);
     }
 
 
-    @PreAuthorize("#id == authentication.name OR hasRole('ADMIN')")
     // Servicio para obtener un usuario de la base de datos
     public Usuario getUsuario(@NonNull String id) throws UsuarioNoEncontradoException {
         Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
@@ -66,7 +65,6 @@ public class UsuarioService {
         }
     }
 
-    @PreAuthorize("#id == authentication.name OR hasRole('ADMIN')")
     // Servicio para elminar un usuario de la base de datos - return?
     public void eliminarUsuario(@NonNull String id) throws UsuarioNoEncontradoException {
         if (usuarioRepository.existsById(id)) {
@@ -76,8 +74,6 @@ public class UsuarioService {
         }
     }
 
-
-    @PreAuthorize("hasRole('ADMIN')")
     public Page<Usuario> getUsuarios(String nombre, String rol, Pageable pageable) {
         if (nombre != null && rol != null) {
             return usuarioRepository.findByNombreContainingIgnoreCaseAndRol(nombre, rol, pageable);
