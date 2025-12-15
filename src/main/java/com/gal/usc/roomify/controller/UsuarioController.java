@@ -6,6 +6,9 @@ import com.gal.usc.roomify.model.Role;
 import com.gal.usc.roomify.model.Usuario;
 import com.gal.usc.roomify.repository.RoleRepository;
 import com.gal.usc.roomify.service.UsuarioService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -31,7 +34,20 @@ public class UsuarioController {
         this.roleRepository = roleRepository;
     }
 
-    // 🟢 GET: Obtener lista de usuarios (paginada, filtrada y ordenada)
+    @Operation(
+            summary = "Devolvemos todos los usuarios",
+            description = "Obtenemos todos los usuarios de la BBDD"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Devolvemos los usuarios de la BBDD"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "No se tiene permiso para acceder a todos los Usuarios"
+            ),
+    })
     @GetMapping()
     public ResponseEntity<@NonNull Page<@NonNull Usuario>> getUsuarios(
             @RequestParam(value = "nombre", required = false) String nombre,
@@ -55,7 +71,25 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarios);
     }
 
-    // 🟢 GET: Obtener un usuario por ID
+
+    @Operation(
+            summary = "Obtemeos un usuario",
+            description = "Devuelve un usuario concreto con el id pasado como argumento"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "El usuario existe y se devuelve"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "El usuario no existe"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "No se tiene permiso para obtener información de este usuario"
+            )
+    })
     @GetMapping("/{id}")
     public ResponseEntity<@NonNull Usuario> getUsuario(@PathVariable String id) {
         try {
@@ -66,7 +100,24 @@ public class UsuarioController {
         }
     }
 
-    // 🟢 POST: Crear un nuevo usuario
+    @Operation(
+            summary = "Anhadimos un usuario",
+            description = "Se anhade un usuario a la BBDD, por defecto en el Servicio se le asigna el Rol: USER"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Se crea y se devuelve el usuario, omitiendo campos sensibles como la contraseña"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "No se tiene permiso para añadir un usuario"
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Se está intentando crear un usuario que ya existe"
+            )
+    })
     @PostMapping()
     public ResponseEntity<@NonNull Usuario> addUsuario(@RequestBody Usuario usuario) {
         try {
@@ -90,6 +141,24 @@ public class UsuarioController {
         }
     }
 
+    @Operation(
+            summary = "Borrar un usuario de la colección",
+            description = "Eliminamos a un usuario de la colección"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Devolvemos un OK de que se borró el usuario correctamente"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "No se encontró el Usuario"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "No se tiene permisos para hacer este borrado (por ej. un USER intenta borrar a otro USER)"
+            )
+    })
     // 🟢 DELETE: Eliminar un usuario por ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUsuario(@PathVariable String id) {
