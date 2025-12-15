@@ -11,7 +11,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Set;
@@ -20,23 +19,19 @@ import java.util.stream.Collectors;
 @Document(collection = "usuarios")
 public class Usuario implements UserDetails {
 
-    public interface Views {
-        interface Public {}
-        interface Private extends Public {}
-    }
-
     @Id
-    @JsonView(Views.Public.class)
     private String id;
 
-    @JsonView(Views.Private.class)
+    private String nombre;
+    private String email;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
-
-    @JsonView(Views.Private.class)
+    // Guarda solo los IDs de los roles en la colección 'usuarios',
+    // pero trae el objeto completo al cargarlo en Java.
+    @DBRef
     private Set<Role> roles;
 
-    private String nombre;
     private int habitacion;
     private LocalDate nacimiento;
     private int telefono;
@@ -149,4 +144,8 @@ public class Usuario implements UserDetails {
     public void setRol(String rol) {
         this.rol = rol;
     }
+
+    public String getEmail() { return email; }
+
+    public void setEmail(String email) { this.email = email; }
 }

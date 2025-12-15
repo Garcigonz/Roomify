@@ -17,5 +17,6 @@ public interface UsuarioRepository extends MongoRepository<@NonNull Usuario, @No
     Page<Usuario> findByRol(String rol, Pageable pageable);
     Page<Usuario> findByNombreContainingIgnoreCaseAndRol(String nombre, String rol, Pageable pageable);
     Optional<@NonNull Usuario> findById(String id);
+    Optional<Usuario> findByUsername(String username);
 
 }

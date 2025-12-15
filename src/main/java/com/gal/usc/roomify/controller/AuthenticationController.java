@@ -1,33 +1,41 @@
 package com.gal.usc.roomify.controller;
 
+import com.gal.usc.roomify.dto.request.RegistroUsuarioRequest;
+import com.gal.usc.roomify.dto.response.UsuarioResponse;
+import com.gal.usc.roomify.exception.RefreshTokenInvalidoException;
 import com.gal.usc.roomify.exception.UsuarioDuplicadoException;
+import com.gal.usc.roomify.mapper.UsuarioMapper;
 import com.gal.usc.roomify.model.*;
 import com.gal.usc.roomify.service.AuthenticationService;
-import com.gal.usc.roomify.service.UsuarioService; // <--- Necesitarás crear este servicio
+import com.gal.usc.roomify.service.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.server.Cookie;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
-// import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder; // Descomenta esto cuando tengas UsuarioController
+
+import java.time.Duration;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthenticationController {
 
+    private static final String REFRESH_TOKEN_COOKIE_NAME = "__Secure-RefreshToken";
     private final AuthenticationService authenticationService;
     private final UsuarioService usuarioService;
-    private PasswordEncoder passwordEncoder;
+    private final UsuarioMapper usuarioMapper;
 
     @Autowired
     public AuthenticationController(AuthenticationService authenticationService, UsuarioService usuarioService) {
         this.authenticationService = authenticationService;
         this.usuarioService = usuarioService;
+        this.usuarioMapper = usuarioMapper;
     }
 
     @PostMapping("/login")
@@ -42,6 +50,28 @@ public class AuthenticationController {
 
         return ResponseEntity.noContent()
                 .headers(h -> h.setBearerAuth(token))
+                .build();
+    }
+
+    @PostMapping("login")
+    @PreAuthorize("isAnonymous()")
+    public ResponseEntity<Void> login(@RequestBody Usuario usuario) {
+        Authentication auth = authenticationService.login(usuario);
+        String token = authenticationService.generateJWT(auth);
+        String refreshToken = authenticationService.regenerateRefreshToken(auth);
+        String refreshPath = MvcUriComponentsBuilder.fromMethodName(AuthenticationController.class, "refresh", "").build().toUri().getPath();
+
+        ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
+                .secure(true)
+                .httpOnly(true)
+                .sameSite(Cookie.SameSite.STRICT.toString())
+                .path(refreshPath)
+                .maxAge(Duration.ofDays(7))
+                .build();
+
+        return ResponseEntity.noContent()
+                .headers(headers -> headers.setBearerAuth(token))
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .build();
     }
 
@@ -60,5 +90,48 @@ public class AuthenticationController {
                             .build().toUri())
                     .build();
         }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<UsuarioResponse> register(@Valid @RequestBody RegistroUsuarioRequest request) throws UsuarioDuplicadoException {
+
+        // convertir dto a entidad
+        Usuario usuarioParaGuardar = usuarioMapper.toEntity(request);
+        Usuario usuarioGuardado = usuarioService.addUsuario(usuarioParaGuardar);
+        // convertir a response
+        UsuarioResponse response = usuarioMapper.toResponse(usuarioGuardado);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("refresh")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> refresh(@CookieValue(name = REFRESH_TOKEN_COOKIE_NAME) String refreshToken) {
+        Authentication auth = authenticationService.login(refreshToken);
+
+        if (auth.getPrincipal() != null) {
+            return login((Usuario)auth.getPrincipal());
+        }
+
+        throw new RefreshTokenInvalidoException(refreshToken);
+    }
+
+
+    @PostMapping("logout")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> logout(@RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
+        Authentication auth = authenticationService.parseJWT(token);
+
+        if (auth.getPrincipal() != null) {
+            Usuario user = (Usuario)auth.getPrincipal();
+            authenticationService.invalidateTokens(user);
+            ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, null).build();
+
+            return ResponseEntity.noContent()
+                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                    .build();
+        }
+
+        throw new RuntimeException("Internal Error");
     }
 }

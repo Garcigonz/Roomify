@@ -1,5 +1,8 @@
 package com.gal.usc.roomify.service;
 
+import com.gal.usc.roomify.exception.RefreshTokenInvalidoException;
+import com.gal.usc.roomify.model.RefreshToken;
+import com.gal.usc.roomify.repository.RefreshTokenRepository;
 import com.gal.usc.roomify.repository.UsuarioRepository;
 import com.gal.usc.roomify.repository.RoleRepository;
 import com.gal.usc.roomify.model.Usuario;
@@ -30,6 +33,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 // 1. CAMBIO: Debe implementar UserDetailsService para que SecurityConfig lo reconozca
@@ -39,21 +43,27 @@ public class AuthenticationService implements UserDetailsService {
     private final KeyPair keyPair;
     private final UsuarioRepository userRepository;
     private final RoleRepository roleRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    @Value("${jwt.ttl:PT15M}")
+    @Value("${auth.jwt.ttl:PT15M}")
     private Duration tokenTTL;
+
+    @Value("${auth.refresh.ttl:PT72H}")
+    private Duration refreshTTL;
 
     @Autowired
     public AuthenticationService(
             @Lazy AuthenticationManager authenticationManager,
             KeyPair keyPair,
             UsuarioRepository userRepository,
-            RoleRepository roleRepository
+            RoleRepository roleRepository,
+            RefreshTokenRepository refreshTokenRepository
     ) {
         this.authenticationManager = authenticationManager;
         this.keyPair = keyPair;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     @Override
@@ -69,6 +79,38 @@ public class AuthenticationService implements UserDetailsService {
                 UsernamePasswordAuthenticationToken.unauthenticated(username, password)
         );
     }
+
+    // NUEVO
+    public Authentication login(Usuario usuario) throws AuthenticationException {
+        return authenticationManager.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(usuario.getUsername(), usuario.getPassword()));
+    }
+
+    public Authentication login(String refreshToken) throws AuthenticationException {
+        Optional<RefreshToken> token = refreshTokenRepository.findByToken(refreshToken);
+
+        if (token.isPresent()) {
+            Usuario usuario = userRepository.findByUsername(token.get().getUsername()).orElseThrow(() -> new UsernameNotFoundException(token.get().getUsername()));
+            return login(usuario);
+        }
+
+        throw new RefreshTokenInvalidoException(refreshToken);
+    }
+
+    // Regenerate
+    public String regenerateRefreshToken(Authentication auth) {
+        UUID uuid = UUID.randomUUID();
+        RefreshToken refreshToken = new RefreshToken(uuid.toString(), auth.getName(), refreshTTL.toSeconds());
+        refreshTokenRepository.deleteAllByUsername(auth.getName());
+        refreshTokenRepository.save(refreshToken);
+
+        return refreshToken.getToken();
+    }
+
+    // Invalidar
+    public void invalidateTokens(Usuario usuario) {
+        refreshTokenRepository.deleteAllByUsername(usuario.getUsername());
+    }
+
 
     public String generateJWT(Authentication auth) {
         List<String> roles = auth.getAuthorities()
