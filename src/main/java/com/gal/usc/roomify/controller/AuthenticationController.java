@@ -1,10 +1,14 @@
 package com.gal.usc.roomify.controller;
 
+import com.gal.usc.roomify.dto.request.RegistroUsuarioRequest;
+import com.gal.usc.roomify.dto.response.UsuarioResponse;
 import com.gal.usc.roomify.exception.RefreshTokenInvalidoException;
 import com.gal.usc.roomify.exception.UsuarioDuplicadoException;
+import com.gal.usc.roomify.mapper.UsuarioMapper;
 import com.gal.usc.roomify.model.*;
 import com.gal.usc.roomify.service.AuthenticationService;
 import com.gal.usc.roomify.service.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.server.Cookie;
 import org.springframework.http.HttpHeaders;
@@ -25,11 +29,13 @@ public class AuthenticationController {
     private static final String REFRESH_TOKEN_COOKIE_NAME = "__Secure-RefreshToken";
     private final AuthenticationService authenticationService;
     private final UsuarioService usuarioService;
+    private final UsuarioMapper usuarioMapper;
 
     @Autowired
-    public AuthenticationController(AuthenticationService authenticationService, UsuarioService usuarioService) {
+    public AuthenticationController(AuthenticationService authenticationService, UsuarioService usuarioService, UsuarioMapper usuarioMapper) {
         this.authenticationService = authenticationService;
         this.usuarioService = usuarioService;
+        this.usuarioMapper = usuarioMapper;
     }
 
     /* ???
@@ -78,9 +84,8 @@ public class AuthenticationController {
     }
 
 
-    @PostMapping("/register")
+    /*@PostMapping("/register")
     public ResponseEntity<Usuario> register(@RequestBody Usuario usuario) {
-        // 1. Creamos el usuario en base de datos (Mongo)
         try {
             Usuario createdUser = usuarioService.addUsuario(usuario);
             return ResponseEntity.created(null).body(createdUser);
@@ -93,6 +98,18 @@ public class AuthenticationController {
                             .build().toUri())
                     .build();
         }
+    }*/
+
+    @PostMapping("/register")
+    public ResponseEntity<UsuarioResponse> register(@Valid @RequestBody RegistroUsuarioRequest request) throws UsuarioDuplicadoException {
+
+        // convertir dto a entidad
+        Usuario usuarioParaGuardar = usuarioMapper.toEntity(request);
+        Usuario usuarioGuardado = usuarioService.addUsuario(usuarioParaGuardar);
+        // convertir a response
+        UsuarioResponse response = usuarioMapper.toResponse(usuarioGuardado);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("refresh")
