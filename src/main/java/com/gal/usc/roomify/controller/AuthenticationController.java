@@ -61,7 +61,7 @@ public class AuthenticationController {
                 .build();
     } */
 
-    @PostMapping("login")
+    /*@PostMapping("login")
     @PreAuthorize("isAnonymous()")
     public ResponseEntity<Void> login(@RequestBody Usuario usuario) {
         Authentication auth = authenticationService.login(usuario);
@@ -81,6 +81,17 @@ public class AuthenticationController {
                 .headers(headers -> headers.setBearerAuth(token))
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .build();
+    }*/
+
+    @PostMapping("/login")
+    public ResponseEntity<Void> login(@RequestBody LoginRequest request) {
+        Usuario usuarioLogin = new Usuario();
+        usuarioLogin.setId(request.id());
+        usuarioLogin.setPassword(request.password());
+
+        Authentication auth = authenticationService.login(usuarioLogin);
+
+        return generarRespuestaConTokens(auth);
     }
 
 
@@ -115,10 +126,11 @@ public class AuthenticationController {
     @PostMapping("refresh")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> refresh(@CookieValue(name = REFRESH_TOKEN_COOKIE_NAME) String refreshToken) {
+
         Authentication auth = authenticationService.login(refreshToken);
 
         if (auth.getPrincipal() != null) {
-            return login((Usuario)auth.getPrincipal());
+            return generarRespuestaConTokens(auth);
         }
 
         throw new RefreshTokenInvalidoException(refreshToken);
@@ -141,6 +153,26 @@ public class AuthenticationController {
         }
 
         throw new RuntimeException("Internal Error");
+    }
+
+    private ResponseEntity<Void> generarRespuestaConTokens(Authentication auth) {
+        String token = authenticationService.generateJWT(auth);
+        String refreshToken = authenticationService.regenerateRefreshToken(auth);
+
+        String refreshPath = MvcUriComponentsBuilder.fromMethodName(AuthenticationController.class, "refresh", "").build().toUri().getPath();
+
+        ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
+                .secure(true)
+                .httpOnly(true)
+                .sameSite(Cookie.SameSite.STRICT.toString())
+                .path(refreshPath)
+                .maxAge(Duration.ofDays(7))
+                .build();
+
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .build();
     }
 
 }
