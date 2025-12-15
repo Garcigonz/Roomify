@@ -116,6 +116,7 @@ public class AuthenticationController {
 
         // convertir dto a entidad
         Usuario usuarioParaGuardar = usuarioMapper.toEntity(request);
+
         Usuario usuarioGuardado = usuarioService.addUsuario(usuarioParaGuardar);
         // convertir a response
         UsuarioResponse response = usuarioMapper.toResponse(usuarioGuardado);

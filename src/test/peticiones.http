@@ -3,18 +3,31 @@ POST http://localhost:8080/auth/register
 Content-Type: application/json
 
 {
-  "id": "Usuario_3",
-  "password": "{noop}1234"
+  "id": "usuario15",
+  "nombre": "Juan Perez",
+  "email": "juan.perezz@usc.es",
+  "password": "passwordSeguro123",
+  "habitacion": 101,
+  "nacimiento": "2000-05-20",
+  "telefono": 600123456
 }
-
 
 ###
 POST http://localhost:8080/auth/login
 Content-Type: application/json
 
 {
-  "id": "Usuario_2",
-  "password": "1234"
+  "id": "usuario15",
+  "password": "passwordSeguro123"
+}
+
+###
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "id": "Root",
+  "password": "passwordSeguro123"
 }
 
 ###
@@ -27,15 +40,18 @@ Content-Type: application/json
 }
 ###
 GET http://localhost:8080/usuarios
-Authorization: Bearer eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJSb290IiwiaWF0IjoxNzY1MjEwMjE5LCJleHAiOjE3NjUyMTExMTksIm5iZiI6MTc2NTIxMDIxOSwicm9sZXMiOlsiUk9MRV9BRE1JTiJdfQ._fXbeoGvpzBURygRiGraFRfdQ_V14ywinX3ZoXAyPJWIDOnQt5ppz_1ATnGFCsoTskgYUBpVd3AJR_4kwQHHDQ
+Authorization: Bearer eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJSb290IiwiaWF0IjoxNzY1ODE0NzUxLCJleHAiOjE3NjU4MTU2NTEsIm5iZiI6MTc2NTgxNDc1MSwicm9sZXMiOlsiUk9MRV9BRE1JTiJdfQ.ewoLdFXpQIZ1ZA3nd2W0yg-2v2lu3Pt_y3Rndu1OiVHQWTx-fBlCvfJAd7LPvqbDnW0okPBftvN-m7fgyV6fBg
+Set-Cookie: __Secure-RefreshToken=09204d68-0096-4305-a44f-e64b7ea43033; Path=/auth/refresh; Max-Age=604800; Expires=Mon, 22 Dec 2025 16:05:51 GMT; Secure; HttpOnly; SameSite=STRICT
 
 ###
-GET http://localhost:8080/usuarios/Usuario_1
-Authorization: Bearer eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJSb290IiwiaWF0IjoxNzY1MjEwMjE5LCJleHAiOjE3NjUyMTExMTksIm5iZiI6MTc2NTIxMDIxOSwicm9sZXMiOlsiUk9MRV9BRE1JTiJdfQ._fXbeoGvpzBURygRiGraFRfdQ_V14ywinX3ZoXAyPJWIDOnQt5ppz_1ATnGFCsoTskgYUBpVd3AJR_4kwQHHDQ
+GET http://localhost:8080/usuarios/usuario15
+Authorization: Bearer eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJSb290IiwiaWF0IjoxNzY1ODE0NzUxLCJleHAiOjE3NjU4MTU2NTEsIm5iZiI6MTc2NTgxNDc1MSwicm9sZXMiOlsiUk9MRV9BRE1JTiJdfQ.ewoLdFXpQIZ1ZA3nd2W0yg-2v2lu3Pt_y3Rndu1OiVHQWTx-fBlCvfJAd7LPvqbDnW0okPBftvN-m7fgyV6fBg
+Set-Cookie: __Secure-RefreshToken=09204d68-0096-4305-a44f-e64b7ea43033; Path=/auth/refresh; Max-Age=604800; Expires=Mon, 22 Dec 2025 16:05:51 GMT; Secure; HttpOnly; SameSite=STRICT
 
 ###
-DELETE http://localhost:8080/usuarios/Usuario_2
-Authorization: Bearer eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJSb290IiwiaWF0IjoxNzY1MjEwMjE5LCJleHAiOjE3NjUyMTExMTksIm5iZiI6MTc2NTIxMDIxOSwicm9sZXMiOlsiUk9MRV9BRE1JTiJdfQ._fXbeoGvpzBURygRiGraFRfdQ_V14ywinX3ZoXAyPJWIDOnQt5ppz_1ATnGFCsoTskgYUBpVd3AJR_4kwQHHDQ
+DELETE http://localhost:8080/usuarios/usuario3
+Authorization: Bearer eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJSb290IiwiaWF0IjoxNzY1ODE0NzUxLCJleHAiOjE3NjU4MTU2NTEsIm5iZiI6MTc2NTgxNDc1MSwicm9sZXMiOlsiUk9MRV9BRE1JTiJdfQ.ewoLdFXpQIZ1ZA3nd2W0yg-2v2lu3Pt_y3Rndu1OiVHQWTx-fBlCvfJAd7LPvqbDnW0okPBftvN-m7fgyV6fBg
+Set-Cookie: __Secure-RefreshToken=09204d68-0096-4305-a44f-e64b7ea43033; Path=/auth/refresh; Max-Age=604800; Expires=Mon, 22 Dec 2025 16:05:51 GMT; Secure; HttpOnly; SameSite=STRICT
 
 ###
 POST http://localhost:8080/salas

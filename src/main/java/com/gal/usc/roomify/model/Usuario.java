@@ -23,13 +23,11 @@ public class Usuario implements UserDetails {
     private String id;
 
     private String nombre;
-
+    private String email;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
-    // Guarda solo los IDs de los roles en la colección 'usuarios',
-    // pero trae el objeto completo al cargarlo en Java.
-    @DBRef
+
     private Set<Role> roles;
 
     private int habitacion;
