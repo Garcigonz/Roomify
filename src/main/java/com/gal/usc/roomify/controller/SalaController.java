@@ -3,6 +3,9 @@ import com.gal.usc.roomify.exception.SalaDuplicadaException;
 import com.gal.usc.roomify.exception.SalaNoEncontradaException;
 import com.gal.usc.roomify.model.Sala;
 import com.gal.usc.roomify.service.SalaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +23,20 @@ public class SalaController {
         this.salaService = salaService;
     }
 
+    @Operation(
+            summary = "Obtener una sala",
+            description = "Respondemos a un GET sobre una sala con el contenido de una."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Devolvemos el objeto Sala"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "La sala no existe"
+            )
+    })
     @GetMapping("/{id}")
     public ResponseEntity<@NonNull Sala> getSala(@PathVariable int id) {
         try {
@@ -29,6 +46,24 @@ public class SalaController {
         }
     }
 
+    @Operation(
+            summary = "Anhadimos una nueva sala",
+            description = "Se crea una nueva sala en el repositorio"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Devolvemos la sala que se ha creado"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "No se tiene permisos para insertar en el repositorio"
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "La sala que se quiere crear ya existe"
+            )
+    })
     @PostMapping()
     public ResponseEntity<@NonNull Sala> addSala(@RequestBody Sala sala) {
         try {
