@@ -32,28 +32,36 @@ public class AuthenticationController {
     private final UsuarioMapper usuarioMapper;
 
     @Autowired
-    public AuthenticationController(AuthenticationService authenticationService, UsuarioService usuarioService) {
+    public AuthenticationController(AuthenticationService authenticationService, UsuarioService usuarioService, UsuarioMapper usuarioMapper) {
         this.authenticationService = authenticationService;
         this.usuarioService = usuarioService;
         this.usuarioMapper = usuarioMapper;
     }
 
+    /* ???
     @PostMapping("/login")
     public ResponseEntity<Void> login(@RequestBody LoginRequest request) {
 
-        Authentication auth = authenticationService.login(
-                request.id(),
-                request.password()
-        );
-
+        Authentication auth = authenticationService.login(request.id(), request.password());
         String token = authenticationService.generateJWT(auth);
+        String refreshToken = authenticationService.regenerateRefreshToken(auth);
+        String refreshPath = MvcUriComponentsBuilder.fromMethodName(AuthenticationController.class, "refresh", "").build().toUri().getPath();
+
+        ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
+                .secure(true)
+                .httpOnly(true)
+                .sameSite(Cookie.SameSite.STRICT.toString())
+                .path(refreshPath)
+                .maxAge(Duration.ofDays(7))
+                .build();
+
 
         return ResponseEntity.noContent()
                 .headers(h -> h.setBearerAuth(token))
                 .build();
-    }
+    } */
 
-    @PostMapping("login")
+    /*@PostMapping("login")
     @PreAuthorize("isAnonymous()")
     public ResponseEntity<Void> login(@RequestBody Usuario usuario) {
         Authentication auth = authenticationService.login(usuario);
@@ -73,11 +81,22 @@ public class AuthenticationController {
                 .headers(headers -> headers.setBearerAuth(token))
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .build();
+    }*/
+
+    @PostMapping("/login")
+    public ResponseEntity<Void> login(@RequestBody LoginRequest request) {
+        Usuario usuarioLogin = new Usuario();
+        usuarioLogin.setId(request.id());
+        usuarioLogin.setPassword(request.password());
+
+        Authentication auth = authenticationService.login(usuarioLogin);
+
+        return generarRespuestaConTokens(auth);
     }
 
-    @PostMapping("/register")
+
+    /*@PostMapping("/register")
     public ResponseEntity<Usuario> register(@RequestBody Usuario usuario) {
-        // 1. Creamos el usuario en base de datos (Mongo)
         try {
             Usuario createdUser = usuarioService.addUsuario(usuario);
             return ResponseEntity.created(null).body(createdUser);
@@ -90,13 +109,14 @@ public class AuthenticationController {
                             .build().toUri())
                     .build();
         }
-    }
+    }*/
 
     @PostMapping("/register")
     public ResponseEntity<UsuarioResponse> register(@Valid @RequestBody RegistroUsuarioRequest request) throws UsuarioDuplicadoException {
 
         // convertir dto a entidad
         Usuario usuarioParaGuardar = usuarioMapper.toEntity(request);
+
         Usuario usuarioGuardado = usuarioService.addUsuario(usuarioParaGuardar);
         // convertir a response
         UsuarioResponse response = usuarioMapper.toResponse(usuarioGuardado);
@@ -107,10 +127,11 @@ public class AuthenticationController {
     @PostMapping("refresh")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> refresh(@CookieValue(name = REFRESH_TOKEN_COOKIE_NAME) String refreshToken) {
+
         Authentication auth = authenticationService.login(refreshToken);
 
         if (auth.getPrincipal() != null) {
-            return login((Usuario)auth.getPrincipal());
+            return generarRespuestaConTokens(auth);
         }
 
         throw new RefreshTokenInvalidoException(refreshToken);
@@ -134,4 +155,25 @@ public class AuthenticationController {
 
         throw new RuntimeException("Internal Error");
     }
+
+    private ResponseEntity<Void> generarRespuestaConTokens(Authentication auth) {
+        String token = authenticationService.generateJWT(auth);
+        String refreshToken = authenticationService.regenerateRefreshToken(auth);
+
+        String refreshPath = MvcUriComponentsBuilder.fromMethodName(AuthenticationController.class, "refresh", "").build().toUri().getPath();
+
+        ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
+                .secure(true)
+                .httpOnly(true)
+                .sameSite(Cookie.SameSite.STRICT.toString())
+                .path(refreshPath)
+                .maxAge(Duration.ofDays(7))
+                .build();
+
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .build();
+    }
+
 }

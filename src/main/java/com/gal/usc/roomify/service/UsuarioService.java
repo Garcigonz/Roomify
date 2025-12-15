@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,11 +22,13 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UsuarioService(UsuarioRepository usuarioRepository, RoleRepository roleRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
         /*// Prueba ejemplo
         usuarioRepository.save(new Usuario("58456425D","Pedro Mosquera Cerqueiro", 007, LocalDate.parse("2003-07-24"), 625900947, "residente"));
         usuarioRepository.save(new Usuario("52348961F", "Xenxo Fernandez Rodriguez", 101, LocalDate.parse("1998-03-12"), 612345678, "residente"));
@@ -45,13 +48,16 @@ public class UsuarioService {
 
     // Servicio para añadir un nuevo usuario a la base de datos
     public Usuario addUsuario(@NonNull Usuario usuario) throws UsuarioDuplicadoException {
-        if (!usuarioRepository.existsById(usuario.getId())) {
-            Role userRole = roleRepository.findByRolename("USER");
-            usuario.setRoles(Set.of(userRole));
-            return usuarioRepository.save(usuario);
-        } else {
+        if (usuarioRepository.existsById(usuario.getId())) {
+            // si ya existe
             throw new UsuarioDuplicadoException(usuario);
         }
+
+        Role userRole = roleRepository.findByRolename("USER");
+        usuario.setRoles(Set.of(userRole));
+        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+
+        return usuarioRepository.save(usuario);
     }
 
 
