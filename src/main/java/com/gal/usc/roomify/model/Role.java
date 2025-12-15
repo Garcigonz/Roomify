@@ -1,7 +1,10 @@
 package com.gal.usc.roomify.model;
 
+
+
+
+
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Set;
@@ -10,14 +13,10 @@ import java.util.Set;
 @SuppressWarnings("unused")
 public class Role {
 
-    @Id
     private String rolename;
 
-    @DBRef
     private Set<Role> includes;
 
-    // Igual aquí, guardamos referencias a los documentos de 'permissions'.
-    @DBRef
     private Set<Permission> permissions;
 
     public Role() { }
@@ -48,5 +47,4 @@ public class Role {
         this.includes = includes;
         return this;
     }
-
 }

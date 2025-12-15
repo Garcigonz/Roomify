@@ -2,7 +2,9 @@ package com.gal.usc.roomify.controller;
 
 import com.gal.usc.roomify.exception.UsuarioDuplicadoException;
 import com.gal.usc.roomify.exception.UsuarioNoEncontradoException;
+import com.gal.usc.roomify.model.Role;
 import com.gal.usc.roomify.model.Usuario;
+import com.gal.usc.roomify.repository.RoleRepository;
 import com.gal.usc.roomify.service.UsuarioService;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +23,12 @@ import java.util.List;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final RoleRepository roleRepository;
 
     @Autowired
-    public UsuarioController(UsuarioService usuarioService) {
+    public UsuarioController(UsuarioService usuarioService, RoleRepository roleRepository) {
         this.usuarioService = usuarioService;
+        this.roleRepository = roleRepository;
     }
 
     // 🟢 GET: Obtener lista de usuarios (paginada, filtrada y ordenada)
@@ -67,6 +71,7 @@ public class UsuarioController {
     public ResponseEntity<@NonNull Usuario> addUsuario(@RequestBody Usuario usuario) {
         try {
             usuario = usuarioService.addUsuario(usuario);
+
             return ResponseEntity.created(
                             MvcUriComponentsBuilder.fromMethodName(
                                     UsuarioController.class,
