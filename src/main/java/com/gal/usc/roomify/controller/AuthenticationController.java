@@ -11,6 +11,7 @@ import com.gal.usc.roomify.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -93,10 +94,18 @@ public class AuthenticationController {
     @Operation(
             summary = "Registrar nuevo usuario",
             description = """
-            Registra un nuevo usuario en el sistema.
+            Registra un nuevo usuario en el sistema con validación completa de datos.
             
-            El usuario debe proporcionar todos los datos requeridos según las validaciones del DTO.
-            Si el ID de usuario ya existe, se devuelve un error 409.
+            **Validaciones aplicadas:**
+            - **ID de usuario**: Obligatorio, no puede estar vacío (será el username)
+            - **Nombre**: Obligatorio, no puede estar vacío
+            - **Email**: Obligatorio, debe tener formato válido de email
+            - **Contraseña**: Obligatoria, mínimo 6 caracteres
+            - **Habitación**: Obligatorio, debe ser un número positivo (≥1)
+            - **Fecha de nacimiento**: Obligatoria, debe ser una fecha en el pasado
+            - **Teléfono**: Opcional
+            
+            Si el ID de usuario ya existe en el sistema, se devuelve un error 409 (Conflict).
             """
     )
     @ApiResponses(value = {
@@ -110,21 +119,45 @@ public class AuthenticationController {
             ),
             @ApiResponse(
                     responseCode = "409",
-                    description = "El ID de usuario ya existe",
+                    description = "El ID de usuario ya existe en el sistema",
                     content = @Content
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Datos de registro inválidos",
+                    description = """
+                    Datos de registro inválidos. Posibles errores:
+                    - ID, nombre, email o contraseña vacíos
+                    - Email con formato inválido
+                    - Contraseña con menos de 6 caracteres
+                    - Número de habitación menor a 1
+                    - Fecha de nacimiento en el futuro o nula
+                    """,
                     content = @Content
             )
     })
     @PostMapping("/register")
     public ResponseEntity<UsuarioResponse> register(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Datos del usuario a registrar",
+                    description = "Datos del usuario a registrar con todas las validaciones requeridas",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = RegistroUsuarioRequest.class))
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = RegistroUsuarioRequest.class),
+                            examples = @ExampleObject(
+                                    name = "Usuario válido",
+                                    value = """
+                                    {
+                                      "id": "jgarcia",
+                                      "nombre": "Juan García",
+                                      "email": "juan.garcia@example.com",
+                                      "password": "contraseña123",
+                                      "habitacion": 305,
+                                      "nacimiento": "2000-05-15",
+                                      "telefono": 612345678
+                                    }
+                                    """
+                            )
+                    )
             )
             @Valid @RequestBody RegistroUsuarioRequest request) throws UsuarioDuplicadoException {
 
