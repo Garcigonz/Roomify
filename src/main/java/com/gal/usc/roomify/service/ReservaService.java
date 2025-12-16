@@ -62,6 +62,7 @@ public class ReservaService {
                 nuevaReserva.horaInicio()
         );
 
+        Usuario usuario = usuarioRepository.findById(nuevaReserva.usuario().getId()).orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
         if (!reservasConflictivas.isEmpty()) {
             throw new ReservandoNoDisponibleException(nuevaReserva);
         }

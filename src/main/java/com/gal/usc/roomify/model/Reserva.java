@@ -21,5 +21,4 @@ public record Reserva(
             horaFin = horaInicio.plusHours(3);
         }
     }
-
 }

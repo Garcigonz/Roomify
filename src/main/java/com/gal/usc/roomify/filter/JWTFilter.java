@@ -30,7 +30,7 @@ public class JWTFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain chain
-    ) throws ServletException, IOException { // Quitamos JwtException de aquí
+    ) throws ServletException, IOException {
 
         String token = request.getHeader(HttpHeaders.AUTHORIZATION);
 
@@ -49,8 +49,6 @@ public class JWTFilter extends OncePerRequestFilter {
         } catch (JwtException e) {
             // si el token está mal o expirado, no se autentica
             SecurityContextHolder.clearContext();
-
-            //System.out.println("Token inválido: " + e.getMessage());
         }
 
         chain.doFilter(request, response);

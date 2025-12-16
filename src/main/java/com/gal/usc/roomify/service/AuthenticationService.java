@@ -68,19 +68,16 @@ public class AuthenticationService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // En Mongo, el findById busca por la clave primaria (@Id), que en tu caso es el username
         return userRepository.findById(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
     }
 
     public Authentication login(String username, String password) throws AuthenticationException {
-        // 3. CAMBIO: Corrección de sintaxis de getters (getId y getPassword)
         return authenticationManager.authenticate(
                 UsernamePasswordAuthenticationToken.unauthenticated(username, password)
         );
     }
 
-    // NUEVO
     public Authentication login(Usuario usuario) throws AuthenticationException {
         return authenticationManager.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(usuario.getUsername(), usuario.getPassword()));
     }
@@ -96,7 +93,6 @@ public class AuthenticationService implements UserDetailsService {
         throw new RefreshTokenInvalidoException(refreshToken);
     }
 
-    // Regenerate
     public String regenerateRefreshToken(Authentication auth) {
         UUID uuid = UUID.randomUUID();
         RefreshToken refreshToken = new RefreshToken(uuid.toString(), auth.getName(), refreshTTL.toSeconds());
@@ -106,7 +102,6 @@ public class AuthenticationService implements UserDetailsService {
         return refreshToken.getToken();
     }
 
-    // Invalidar
     public void invalidateTokens(Usuario usuario) {
         refreshTokenRepository.deleteAllByUsername(usuario.getUsername());
     }
@@ -157,7 +152,6 @@ public class AuthenticationService implements UserDetailsService {
             }
             if (role.getPermissions() != null && !role.getPermissions().isEmpty()) {
                 builder.role("ROLE_"+role.getRolename()).implies(
-                        // 4. CAMBIO: Usar getName() en lugar de toString() para evitar errores
                         role.getPermissions().stream().map(Permission::getName).toArray(String[]::new)
                 );
             }

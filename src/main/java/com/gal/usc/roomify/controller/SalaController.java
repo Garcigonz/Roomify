@@ -72,7 +72,6 @@ public class SalaController {
     @PostMapping()
     public ResponseEntity<@NonNull Sala> addSala(@RequestBody Sala sala) {
         try {
-            // ?¿
             sala = salaService.addSala(sala);
             return ResponseEntity
                     .created(MvcUriComponentsBuilder.fromMethodName(SalaController.class, "getSala", sala.getId()).build().toUri())
