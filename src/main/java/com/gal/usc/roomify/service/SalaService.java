@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -40,6 +41,7 @@ public class SalaService {
     }
 
 
+    @PreAuthorize("hasRole('ADMIN')")
     // Servicio para añadir una nueva sala a la base de datos
     public Sala addSala(@NonNull Sala sala) throws SalaDuplicadaException {
         if (!salaRepository.existsById(sala.getId())) {
@@ -48,6 +50,7 @@ public class SalaService {
             throw new SalaDuplicadaException(sala);
         }
     }
+
 
     // Servicio para obtener una sala de la base de datos
     public Sala getSala(@NonNull Integer id) throws SalaNoEncontradaException {
@@ -58,6 +61,7 @@ public class SalaService {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     // Servicio para eliminar una sala de la base de datos
     public void eliminarSala(@NonNull Integer id) throws SalaNoEncontradaException {
         if (salaRepository.existsById(id)) {
@@ -67,8 +71,12 @@ public class SalaService {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     // Servicio para asignar Sala a un residente
     public void asignarUsuario(@NonNull Usuario usuario, @NonNull Sala sala) {
+        if(salaRepository.existsById(sala.getId())) {
+            salaRepository.findById(sala.getId()).setResponsableActual(usuario);
+        }
 
     }
 

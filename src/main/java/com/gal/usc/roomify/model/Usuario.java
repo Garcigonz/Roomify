@@ -26,12 +26,14 @@ public class Usuario implements UserDetails {
     private String email;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
-    //guarda solo los IDs de los roles en la colección usuarios pero trae el objeto completo al cargarlo
-    @DBRef
+
+
     private Set<Role> roles;
+
     private int habitacion;
     private LocalDate nacimiento;
     private int telefono;
+
     private String rol;
 
     public Usuario() {}

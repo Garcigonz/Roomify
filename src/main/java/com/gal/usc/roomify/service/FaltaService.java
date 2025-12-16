@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import com.gal.usc.roomify.model.*;
 
@@ -31,6 +32,7 @@ public class FaltaService {
 
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     // Servicio de añadir una nueva falta a la BBDD
     public Falta addFalta(@NonNull Falta falta) throws FaltaDuplicadaException {
         if(!faltaRepository.existsById(falta.id()))
@@ -40,6 +42,7 @@ public class FaltaService {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     // Servicio para obtener una Falta de la BBDD
     public Falta getFalta(@NonNull String id) throws FaltaNoEncontradaException {
         Optional<Falta> faltaOpt = faltaRepository.findById(id);
@@ -52,6 +55,7 @@ public class FaltaService {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     /**
      * Obtiene todas las faltas de forma paginada
      * @param page Configuración de paginación y ordenamiento
@@ -61,6 +65,7 @@ public class FaltaService {
         return faltaRepository.findAll(page);
     }
 
+    @PreAuthorize("#usuarioId == authentication.name OR hasRole('ADMIN')")
     /**
      * Obtiene todas las faltas de un usuario específico
      * @param usuarioId ID del usuario

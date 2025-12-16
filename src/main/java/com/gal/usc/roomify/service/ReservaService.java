@@ -13,12 +13,15 @@ import com.gal.usc.roomify.repository.SalaRepository;
 import com.gal.usc.roomify.repository.UsuarioRepository;
 import com.gal.usc.utils.patch.JsonPatch;
 import com.gal.usc.utils.patch.JsonPatchOperation;
+import org.apache.tomcat.util.http.parser.Authorization;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -41,9 +44,13 @@ public class ReservaService {
         this.faltaRepository = faltaRepository;
         this.salaRepository = salaRepository;
         this.mapper = mapper;
+
+
     }
 
 
+    // Solo el responsable de la sala podrá hacer la reserva. O el ADMIN
+    @PreAuthorize("#nuevaReserva.usuario().id == authentication.name OR hasRole('ADMIN')")
     // Servicio para añadir una nueva reserva a la base de datos
     public Reserva addReserva(Reserva nuevaReserva) throws ReservandoNoDisponibleException, UsuarioNoEncontradoException, UsuarioNoEncontradoException {
         // Buscar reservas que se solapen con la nueva reserva
@@ -71,12 +78,16 @@ public class ReservaService {
         return reservaRepository.save(nuevaReserva);
     }
 
+
     // Servicio para obtener una reserva de la base de datos
     public Reserva getReserva(@NonNull String id) throws ReservaNoEncontradaException {
         return reservaRepository.findById(id)
                 .orElseThrow(() -> new ReservaNoEncontradaException(id));
     }
 
+
+
+    @PreAuthorize("@reservaService.getResponsableReserva(#id).id == authentication.name OR hasRole('ADMIN')")
     // Servicio para eliminar una reserva de la base de datos
     public void eliminarReserva(@NonNull String id) throws ReservaNoEncontradaException {
         if (reservaRepository.existsById(id)) {
@@ -86,11 +97,19 @@ public class ReservaService {
         }
     }
 
-    //
+    @PreAuthorize("@reservaService.getResponsableReserva(#id).id == authentication.name OR hasRole('ADMIN')")
     public Reserva updateReserva(String id, List<JsonPatchOperation> cambios) throws ReservaNoEncontradaException {
         Reserva reserva = reservaRepository.findById(id).orElseThrow(() -> new ReservaNoEncontradaException(id));
         JsonNode patched = JsonPatch.apply(cambios, mapper.convertValue(reserva, JsonNode.class));
         Reserva updated = mapper.convertValue(patched, Reserva.class);
         return reservaRepository.save(updated);
+    }
+
+    public Usuario getResponsableReserva(String idReserva) throws ReservaNoEncontradaException {
+        if(reservaRepository.existsById(idReserva)){
+            return reservaRepository.findById(idReserva).get().usuario();
+        }else{
+            throw new ReservaNoEncontradaException(idReserva);
+        }
     }
 }
