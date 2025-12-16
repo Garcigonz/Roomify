@@ -6,6 +6,7 @@ import com.gal.usc.roomify.service.SalaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("salas")
+@Tag(name = "Salas", description = "Endpoints para gestión de salas")
 public class SalaController {
     SalaService salaService;
 
@@ -29,17 +31,17 @@ public class SalaController {
     }
 
     @Operation(
-            summary = "Obtener una sala",
-            description = "Respondemos a un GET sobre una sala con el contenido de una."
+            summary = "Obtener sala por ID",
+            description = "Recupera los detalles de una sala concreta mediante su identificador único."
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Devolvemos el objeto Sala"
+                    description = "Sala encontrada con éxito"
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "La sala no existe"
+                    description = "Sala no encontrada"
             )
     })
     @GetMapping("/{id}")
@@ -52,13 +54,13 @@ public class SalaController {
     }
 
     @Operation(
-            summary = "Anhadimos una nueva sala",
-            description = "Se crea una nueva sala en el repositorio"
+            summary = "Crear nueva sala",
+            description = "Registra una nueva sala. Si la sala ya existe, devuelve un error (409)."
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",
-                    description = "Devolvemos la sala que se ha creado"
+                    description = "Sala registrada con éxito"
             ),
             @ApiResponse(
                     responseCode = "403",
@@ -66,7 +68,7 @@ public class SalaController {
             ),
             @ApiResponse(
                     responseCode = "409",
-                    description = "La sala que se quiere crear ya existe"
+                    description = "La sala ya existe"
             )
     })
     @PostMapping()
@@ -85,6 +87,17 @@ public class SalaController {
         }
     }
 
+    @Operation(
+            summary = "Obtener salas",
+            description = "Recupera una página de salas con soporte para paginación, tamaño de página y ordenación. " +
+                    "La ordenación se puede especificar usando el prefijo `-` para orden descendente (ej: -capacidad)."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Lista de salas obtenida con éxito"
+            )
+    })
     @GetMapping()
     public ResponseEntity<@NonNull Page<@NonNull Sala>> getSalas(
             @RequestParam(defaultValue = "0") int page,

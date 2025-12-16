@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.aggregation.StringOperators;
@@ -25,6 +26,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("reservas")
+@Tag(name = "Reservas", description = "Endpoints para gestión de reservas")
 public class ReservaController {
     private final ReservaRepository reservaRepository;
     ReservaService reservaService;
@@ -125,17 +127,17 @@ public class ReservaController {
     }
 
     @Operation(
-            summary = "Elimina una reserva",
-            description = "Eliminamos una reserva de la colección"
+            summary = "Eliminar reserva por ID",
+            description = "Elimina una reserva concre mediante su identificador único."
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "204",
-                    description = "La reserva fue eliminada perfectamente"
+                    description = "Reserva eliminada con éxito"
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "La reserva que se intenta borrar no existe"
+                    description = "Reserva no encontrada"
             )
     })
     @DeleteMapping("/{idReserva}")
@@ -150,17 +152,59 @@ public class ReservaController {
 
 
     @Operation(
-            summary = "Actualizamos una reserva",
-            description = "Se le envía un JSON para actualizar la reserva"
+            summary = "Actualizar reserva por ID",
+            description = """
+        Actualiza parcialmente una reserva existente mediante operaciones JSON Patch.
+        
+        **Operaciones soportadas:**
+        - `replace`: Reemplazar el valor de un campo
+        - `add`: Añadir un nuevo campo o valor
+        - `remove`: Eliminar un campo
+        - `copy`: Copiar un valor de un campo a otro
+        - `move`: Mover un valor de un campo a otro
+        
+        **Ejemplo de uso:**
+        ```json
+        [
+          {
+            "op": "replace",
+            "path": "/estado",
+            "value": "CONFIRMADA"
+          },
+          {
+            "op": "replace",
+            "path": "/observaciones",
+            "value": "Requiere proyector"
+          }
+        ]
+        ```
+        
+        **Campos comunes a modificar:** estado, observaciones, fechaInicio, fechaFin, salaId, etc.
+        """
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Se editó correctamente la reserva"
+                    description = "Reserva actualizada con éxito",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Reserva.class)
+                    )
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "La reserva a la que se quiere acceder no existe"
+                    description = "Reserva no encontrada",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Operación JSON Patch inválida o datos incorrectos",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "422",
+                    description = "La operación es válida pero no se puede procesar (ej: campo no existe)",
+                    content = @Content
             )
     })
     @PatchMapping("/{id}")

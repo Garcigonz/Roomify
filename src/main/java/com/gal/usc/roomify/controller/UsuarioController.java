@@ -9,6 +9,7 @@ import com.gal.usc.roomify.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("usuarios")
+@Tag(name = "Usuarios", description = "Endpoints para gestión de usuarios")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
@@ -35,13 +37,13 @@ public class UsuarioController {
     }
 
     @Operation(
-            summary = "Devolvemos todos los usuarios",
-            description = "Obtenemos todos los usuarios de la BBDD"
+            summary = "Obtener usuarios",
+            description = "Recupera la lista de usuarios."
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",
-                    description = "Devolvemos los usuarios de la BBDD"
+                    description = "Lista de usuarios obtenida con éxito"
             ),
             @ApiResponse(
                     responseCode = "403",
@@ -73,17 +75,17 @@ public class UsuarioController {
 
 
     @Operation(
-            summary = "Obtemeos un usuario",
-            description = "Devuelve un usuario concreto con el id pasado como argumento"
+            summary = "Obtener usuario por ID",
+            description = "Recupera los detalles de un usuario concreto mediante su identificador único."
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",
-                    description = "El usuario existe y se devuelve"
+                    description = "Usuario encontrado con éxito"
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "El usuario no existe"
+                    description = "Usuario no encontrado"
             ),
             @ApiResponse(
                     responseCode = "403",
@@ -101,13 +103,13 @@ public class UsuarioController {
     }
 
     @Operation(
-            summary = "Anhadimos un usuario",
-            description = "Se anhade un usuario a la BBDD, por defecto en el Servicio se le asigna el Rol: USER"
+            summary = "Crear un nuevo usuario",
+            description = "Registra un nuevo usuario. Por defecto se le asigna el Rol: USER"
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",
-                    description = "Se crea y se devuelve el usuario, omitiendo campos sensibles como la contraseña"
+                    description = "Usuario registrado con éxito"
             ),
             @ApiResponse(
                     responseCode = "403",
@@ -115,7 +117,7 @@ public class UsuarioController {
             ),
             @ApiResponse(
                     responseCode = "409",
-                    description = "Se está intentando crear un usuario que ya existe"
+                    description = "El usuario ya existe"
             )
     })
     @PostMapping()
@@ -142,13 +144,13 @@ public class UsuarioController {
     }
 
     @Operation(
-            summary = "Borrar un usuario de la colección",
-            description = "Eliminamos a un usuario de la colección"
+            summary = "Eliminar usuario por ID",
+            description = "Elimina a un usuario concreto mediante su identificador único."
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "204",
-                    description = "Devolvemos un OK de que se borró el usuario correctamente"
+                    description = "Usuario eliminado con éxito"
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -156,7 +158,7 @@ public class UsuarioController {
             ),
             @ApiResponse(
                     responseCode = "403",
-                    description = "No se tiene permisos para hacer este borrado (por ej. un USER intenta borrar a otro USER)"
+                    description = "No se tienen permisos para hacer este borrado"
             )
     })
     @DeleteMapping("/{id}")

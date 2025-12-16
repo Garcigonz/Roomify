@@ -25,7 +25,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("faltas")
-@Tag(name = "Faltas", description = "API para la gestión de faltas de usuarios")
+@Tag(name = "Faltas", description = "Endpoints para gestión de faltas de usuarios")
 public class FaltaController {
 
     FaltaService faltaService;
@@ -36,13 +36,13 @@ public class FaltaController {
     }
 
     @Operation(
-            summary = "Registrar una nueva falta",
-            description = "Registra una nueva falta para un usuario. Si la falta ya existe, devuelve un conflicto (409)."
+            summary = "Crear nueva falta",
+            description = "Registra una nueva falta para un usuario. Si la falta ya existe, devuelve un error (409)."
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",
-                    description = "Falta registrada exitosamente",
+                    description = "Falta registrada con éxito",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = Falta.class)
@@ -89,7 +89,25 @@ public class FaltaController {
         }
     }
 
-
+    @Operation(
+            summary = "Obtener falta por ID",
+            description = "Recupera los detalles de una falta específica mediante su identificador único."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Falta encontrada con éxito",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Falta.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Falta no encontrada",
+                    content = @Content
+            )
+    })
     @GetMapping("/{id}")
     public ResponseEntity<@NonNull Falta> getFalta(
             @Parameter(
@@ -106,7 +124,7 @@ public class FaltaController {
     }
 
     @Operation(
-            summary = "Listar faltas con paginación",
+            summary = "Obtener faltas",
             description = """
             Obtiene una lista paginada de faltas con opciones de ordenación.
             
@@ -119,7 +137,7 @@ public class FaltaController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Lista de faltas obtenida exitosamente",
+                    description = "Lista de faltas obtenida con éxito",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = Page.class)
