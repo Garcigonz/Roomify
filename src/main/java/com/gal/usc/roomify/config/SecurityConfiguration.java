@@ -41,7 +41,7 @@ public class SecurityConfiguration {
                                 // rutas de autenticación
                                 .requestMatchers("/auth/**").permitAll()
                                 // rutas de documentación (Scalar)
-                                .requestMatchers("/scalar", "/scalar.html", "/v3/api-docs/**").permitAll()
+                                .requestMatchers("/scalar", "/scalar/**", "/scalar.html", "/api-docs/**", "/api-docs").permitAll()
                                 // el resto requiere login
                                 .anyRequest().authenticated()
                 )
