@@ -1,9 +1,6 @@
 package com.gal.usc.roomify.service;
 
-import com.gal.usc.roomify.exception.ReservaNoEncontradaException;
-import com.gal.usc.roomify.exception.ReservandoNoDisponibleException;
-import com.gal.usc.roomify.exception.UsuarioCastigadoException;
-import com.gal.usc.roomify.exception.UsuarioNoEncontradoException;
+import com.gal.usc.roomify.exception.*;
 import com.gal.usc.roomify.model.Reserva;
 import com.gal.usc.roomify.model.Sala;
 import com.gal.usc.roomify.model.Usuario;
@@ -52,32 +49,46 @@ public class ReservaService {
     // Solo el responsable de la sala podrá hacer la reserva. O el ADMIN
     @PreAuthorize("#nuevaReserva.usuario().id == authentication.name OR hasRole('ADMIN')")
     // Servicio para añadir una nueva reserva a la base de datos
-    public Reserva addReserva(Reserva nuevaReserva) throws ReservandoNoDisponibleException, UsuarioNoEncontradoException, UsuarioNoEncontradoException {
-        // Buscar reservas que se solapen con la nueva reserva
+    public Reserva addReserva(Reserva nuevaReserva) throws ReservandoNoDisponibleException, UsuarioNoEncontradoException, UsuarioCastigadoException, SalaNoEncontradaException {
+
+        // validacion de sala
+        Sala salaReal = salaRepository.findById(nuevaReserva.sala().getId())
+                .orElseThrow(() -> new SalaNoEncontradaException(nuevaReserva.sala().getId()));
+
+        // validar solapamiento
         List<Reserva> reservasConflictivas = reservaRepository.findBySalaIdAndHoraInicioBeforeAndHoraFinAfter(
-                nuevaReserva.sala().getId(),
+                salaReal.getId(),
                 nuevaReserva.horaFin(),
                 nuevaReserva.horaInicio()
         );
 
-        Usuario usuario = usuarioRepository.findById(nuevaReserva.usuario().getId()).orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
         if (!reservasConflictivas.isEmpty()) {
             throw new ReservandoNoDisponibleException(nuevaReserva);
         }
 
-        // Contamos cuantas faltas tiene el Usuario
-        long faltasCount = faltaRepository.countByCastigadoId(usuario.getId());
+        // validar usuario
+        Usuario usuarioReal = usuarioRepository.findById(nuevaReserva.usuario().getId())
+                .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
 
-        try{
-            // Si tiene 3 faltas o más, LANZAMOS EXCEPCIÓN
-            if(faltasCount >= 3) {
-                throw new UsuarioCastigadoException(usuario);
-            }
-        }catch (UsuarioCastigadoException castException){}
+        // 4. Validar Castigos (recuerda quitar el try-catch que tenías antes)
+        long faltasCount = faltaRepository.countByCastigadoId(usuarioReal.getId());
+        if(faltasCount >= 3) {
+            throw new UsuarioCastigadoException(usuarioReal);
+        }
 
-        return reservaRepository.save(nuevaReserva);
+        // 5. Construir y guardar
+        // Usamos 'salaReal' y 'usuarioReal' para asegurar que guardamos datos completos y actualizados en la reserva
+        Reserva reservaA_Guardar = new Reserva(
+                nuevaReserva.id(),
+                salaReal,       // <--- Aquí metemos la sala completa de la BD
+                nuevaReserva.horaInicio(),
+                nuevaReserva.horaFin(),
+                usuarioReal,
+                nuevaReserva.observaciones()
+        );
+
+        return reservaRepository.save(reservaA_Guardar);
     }
-
 
     // Servicio para obtener una reserva de la base de datos
     public Reserva getReserva(@NonNull String id) throws ReservaNoEncontradaException {

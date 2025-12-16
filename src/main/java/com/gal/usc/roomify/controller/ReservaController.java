@@ -1,9 +1,7 @@
 package com.gal.usc.roomify.controller;
 
 
-import com.gal.usc.roomify.exception.ReservaNoEncontradaException;
-import com.gal.usc.roomify.exception.ReservandoNoDisponibleException;
-import com.gal.usc.roomify.exception.UsuarioNoEncontradoException;
+import com.gal.usc.roomify.exception.*;
 import com.gal.usc.roomify.model.Reserva;
 import com.gal.usc.roomify.repository.ReservaRepository;
 import com.gal.usc.roomify.service.ReservaService;
@@ -70,10 +68,10 @@ public class ReservaController {
                     example = "R12345",
                     required = true
             )
-            @PathVariable String id
+            @PathVariable("id") String id
     ) {
         try {
-            return ResponseEntity.ok(reservaService.getReserva(id));
+            return ResponseEntity.ok(reservaService.getReserva(id.trim()));
         } catch (ReservaNoEncontradaException e) {
             return ResponseEntity.notFound().build();
         }
@@ -116,11 +114,13 @@ public class ReservaController {
             return ResponseEntity
                     .created(MvcUriComponentsBuilder.fromMethodName(ReservaController.class, "getReserva", nuevaReserva.id()).build().toUri())
                     .body(nuevaReserva);
-        } catch (ReservandoNoDisponibleException e) {
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .location(MvcUriComponentsBuilder.fromMethodName(ReservaController.class, "getReserva", nuevaReserva.id()).build().toUri())
-                    .build();
+        } catch (ReservandoNoDisponibleException | UsuarioCastigadoException e) {
+            // Conflictos de lógica (sala ocupada o usuario castigado) -> 409 Conflict
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            // Opcional: Podrías devolver un body con el mensaje del error
+        } catch (SalaNoEncontradaException e) {
+            // La sala no existe -> 404 Not Found
+            return ResponseEntity.notFound().build();
         }
     }
 

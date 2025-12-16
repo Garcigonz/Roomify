@@ -1,12 +1,13 @@
 package com.gal.usc.roomify.model;
 
 import java.time.LocalDateTime;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
+import org.springframework.data.mongodb.core.mapping.FieldType;import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "reservas")
 public record Reserva(
-        @Id String id,
+        @MongoId(FieldType.OBJECT_ID) String id,
         Sala sala,
         LocalDateTime horaInicio,
         LocalDateTime horaFin,
@@ -21,10 +22,4 @@ public record Reserva(
         }
     }
 
-//    // Constructor de conveniencia para crear nuevas reservas
-//    public Reserva(Sala sala, LocalDateTime horaInicio, Usuario usuario,
-//                   String observaciones, String estado) {
-//        this(null, sala, horaInicio, horaInicio.plusHours(3),
-//                usuario, observaciones);
-//    }
 }

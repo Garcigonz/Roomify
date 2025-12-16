@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.List;
 
 @Repository
@@ -16,7 +17,7 @@ public interface SalaRepository extends MongoRepository<@NonNull Sala, @NonNull 
     boolean existsById(int id);
 
     // Encontrar sala por Id
-    Sala findById(int id);
+    Optional<Sala> findById(Integer id);
 
     // Eliminar una sala por ID
     void deleteById(int id);

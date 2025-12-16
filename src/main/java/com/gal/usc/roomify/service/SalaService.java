@@ -54,11 +54,8 @@ public class SalaService {
 
     // Servicio para obtener una sala de la base de datos
     public Sala getSala(@NonNull Integer id) throws SalaNoEncontradaException {
-        if (salaRepository.existsById(id)) {
-            return salaRepository.findById(id);
-        } else {
-            throw new SalaNoEncontradaException(id);
-        }
+        return salaRepository.findById(id)
+                .orElseThrow(() -> new SalaNoEncontradaException(id));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -72,12 +69,12 @@ public class SalaService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    // Servicio para asignar Sala a un residente
+// Servicio para asignar Sala a un residente
     public void asignarUsuario(@NonNull Usuario usuario, @NonNull Sala sala) {
-        if(salaRepository.existsById(sala.getId())) {
-            salaRepository.findById(sala.getId()).setResponsableActual(usuario);
-        }
-
+        salaRepository.findById(sala.getId()).ifPresent(salaEnBaseDeDatos -> {
+            salaEnBaseDeDatos.setResponsableActual(usuario);
+            salaRepository.save(salaEnBaseDeDatos);
+        });
     }
 
     public Page<Sala> getSalas(Pageable pageable) {
