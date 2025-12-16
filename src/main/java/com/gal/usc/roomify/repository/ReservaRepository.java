@@ -10,8 +10,6 @@ import java.util.List;
 
 @Repository
 public interface ReservaRepository extends MongoRepository<@NonNull Reserva, @NonNull String> {
-    // Buscar por sala
-    //Reserva findById(String reservaId);
 
     // Buscar por estudiante
     List<Reserva> findByUsuarioId(String usuarioId);

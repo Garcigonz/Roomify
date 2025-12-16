@@ -29,21 +29,6 @@ public class UsuarioService {
         this.usuarioRepository = usuarioRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
-        /*// Prueba ejemplo
-        usuarioRepository.save(new Usuario("58456425D","Pedro Mosquera Cerqueiro", 007, LocalDate.parse("2003-07-24"), 625900947, "residente"));
-        usuarioRepository.save(new Usuario("52348961F", "Xenxo Fernandez Rodriguez", 101, LocalDate.parse("1998-03-12"), 612345678, "residente"));
-        usuarioRepository.save(new Usuario("74215689K", "Andrés García López", 102, LocalDate.parse("2001-11-03"), 634567890, "visitante"));
-        usuarioRepository.save(new Usuario("61547892M", "María Rodríguez Díaz", 103, LocalDate.parse("1995-05-28"), 698745632, "residente"));
-        usuarioRepository.save(new Usuario("78451236J", "David Sánchez Torres", 104, LocalDate.parse("2000-02-15"), 677889900, "residente"));
-        usuarioRepository.save(new Usuario("49632158P", "Sofía González Castro", 105, LocalDate.parse("2004-09-09"), 689321456, "visitante"));
-        usuarioRepository.save(new Usuario("85479362Q", "Carlos Ruiz Méndez", 106, LocalDate.parse("1999-12-30"), 655432198, "residente"));
-        usuarioRepository.save(new Usuario("71564829T", "Marta López Varela", 107, LocalDate.parse("2002-08-05"), 622198743, "residente"));
-        usuarioRepository.save(new Usuario("58974326H", "Javier Iglesias Suárez", 108, LocalDate.parse("1997-04-17"), 644998877, "residente"));
-        usuarioRepository.save(new Usuario("65214897B", "Lucía Romero Fernández", 109, LocalDate.parse("2003-01-25"), 677112233, "visitante"));
-        usuarioRepository.save(new Usuario("73458912L", "Alberto Fernández Vázquez", 110, LocalDate.parse("1996-06-19"), 633556677, "residente"));
-        usuarioRepository.save(new Usuario("82596431R", "Nerea Castro Martínez", 111, LocalDate.parse("2005-10-02"), 699887766, "residente"));
-        usuarioRepository.save(new Usuario("59421687S", "Pablo Rodríguez Iglesias", 112, LocalDate.parse("1994-07-07"), 655334422, "visitante"));*/
-
     }
 
     // Servicio para añadir un nuevo usuario a la base de datos

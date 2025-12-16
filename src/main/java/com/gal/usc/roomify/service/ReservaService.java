@@ -53,7 +53,6 @@ public class ReservaService {
     @PreAuthorize("#nuevaReserva.usuario().id == authentication.name OR hasRole('ADMIN')")
     // Servicio para añadir una nueva reserva a la base de datos
     public Reserva addReserva(Reserva nuevaReserva) throws ReservandoNoDisponibleException, UsuarioNoEncontradoException, UsuarioNoEncontradoException {
-        // Buscar reservas que se solapen con la nueva reserva
         List<Reserva> reservasConflictivas = reservaRepository.findBySalaIdAndHoraInicioBeforeAndHoraFinAfter(
                 nuevaReserva.sala().getId(),
                 nuevaReserva.horaFin(),

@@ -20,11 +20,5 @@ public record Reserva(
             horaFin = horaInicio.plusHours(3);
         }
     }
-
-//    // Constructor de conveniencia para crear nuevas reservas
-//    public Reserva(Sala sala, LocalDateTime horaInicio, Usuario usuario,
-//                   String observaciones, String estado) {
-//        this(null, sala, horaInicio, horaInicio.plusHours(3),
-//                usuario, observaciones);
-//    }
+    
 }

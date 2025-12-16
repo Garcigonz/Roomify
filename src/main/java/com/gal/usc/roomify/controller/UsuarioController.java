@@ -159,7 +159,6 @@ public class UsuarioController {
                     description = "No se tiene permisos para hacer este borrado (por ej. un USER intenta borrar a otro USER)"
             )
     })
-    // 🟢 DELETE: Eliminar un usuario por ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUsuario(@PathVariable String id) {
         try {

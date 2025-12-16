@@ -38,6 +38,7 @@ public class ScheduledTasks {
         this.mapper = mapper;
     }
 
+    // el Rate se puede modificar
     @Scheduled(fixedRate = 20000)
     public void asignarFaltas() {
         List<Reserva> reservas = reservaRepository.findAll();

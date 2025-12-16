@@ -38,50 +38,7 @@ public class AuthenticationController {
         this.usuarioMapper = usuarioMapper;
     }
 
-    /* ???
-    @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestBody LoginRequest request) {
 
-        Authentication auth = authenticationService.login(request.id(), request.password());
-        String token = authenticationService.generateJWT(auth);
-        String refreshToken = authenticationService.regenerateRefreshToken(auth);
-        String refreshPath = MvcUriComponentsBuilder.fromMethodName(AuthenticationController.class, "refresh", "").build().toUri().getPath();
-
-        ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
-                .secure(true)
-                .httpOnly(true)
-                .sameSite(Cookie.SameSite.STRICT.toString())
-                .path(refreshPath)
-                .maxAge(Duration.ofDays(7))
-                .build();
-
-
-        return ResponseEntity.noContent()
-                .headers(h -> h.setBearerAuth(token))
-                .build();
-    } */
-
-    /*@PostMapping("login")
-    @PreAuthorize("isAnonymous()")
-    public ResponseEntity<Void> login(@RequestBody Usuario usuario) {
-        Authentication auth = authenticationService.login(usuario);
-        String token = authenticationService.generateJWT(auth);
-        String refreshToken = authenticationService.regenerateRefreshToken(auth);
-        String refreshPath = MvcUriComponentsBuilder.fromMethodName(AuthenticationController.class, "refresh", "").build().toUri().getPath();
-
-        ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
-                .secure(true)
-                .httpOnly(true)
-                .sameSite(Cookie.SameSite.STRICT.toString())
-                .path(refreshPath)
-                .maxAge(Duration.ofDays(7))
-                .build();
-
-        return ResponseEntity.noContent()
-                .headers(headers -> headers.setBearerAuth(token))
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .build();
-    }*/
 
     @PostMapping("/login")
     public ResponseEntity<Void> login(@RequestBody LoginRequest request) {
@@ -95,21 +52,6 @@ public class AuthenticationController {
     }
 
 
-    /*@PostMapping("/register")
-    public ResponseEntity<Usuario> register(@RequestBody Usuario usuario) {
-        try {
-            Usuario createdUser = usuarioService.addUsuario(usuario);
-            return ResponseEntity.created(null).body(createdUser);
-        } catch (UsuarioDuplicadoException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .location(MvcUriComponentsBuilder.fromMethodName(
-                                    UsuarioController.class,
-                                    "getUsuario",
-                                    usuario.getId())
-                            .build().toUri())
-                    .build();
-        }
-    }*/
 
     @PostMapping("/register")
     public ResponseEntity<UsuarioResponse> register(@Valid @RequestBody RegistroUsuarioRequest request) throws UsuarioDuplicadoException {
