@@ -5,10 +5,15 @@ import com.gal.usc.roomify.model.Sala;
 import com.gal.usc.roomify.service.SalaService;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("salas")
@@ -44,6 +49,24 @@ public class SalaController {
                     .build();
 
         }
+    }
+
+    @GetMapping()
+    public ResponseEntity<@NonNull Page<@NonNull Sala>> getSalas(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "nombre") List<String> sort
+    ) {
+        // Configuramos la ordenación (ej: sort=-capacidad para descendente)
+        Sort sorting = Sort.by(sort.stream()
+                .map(key -> key.startsWith("-")
+                        ? Sort.Order.desc(key.substring(1))
+                        : Sort.Order.asc(key))
+                .toList());
+
+        PageRequest pageable = PageRequest.of(page, size, sorting);
+
+        return ResponseEntity.ok(salaService.getSalas(pageable));
     }
 
 }

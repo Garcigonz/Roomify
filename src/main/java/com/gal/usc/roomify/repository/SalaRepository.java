@@ -2,6 +2,8 @@ package com.gal.usc.roomify.repository;
 
 import com.gal.usc.roomify.model.Sala;
 import org.jspecify.annotations.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,5 +20,7 @@ public interface SalaRepository extends MongoRepository<@NonNull Sala, @NonNull 
 
     // Eliminar una sala por ID
     void deleteById(int id);
+
+    Page<Sala> findAll(Pageable pageable);
 
 }

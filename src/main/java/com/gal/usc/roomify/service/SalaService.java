@@ -8,7 +8,11 @@ import com.gal.usc.roomify.repository.FaltaRepository;
 import com.gal.usc.roomify.repository.SalaRepository;
 import com.gal.usc.roomify.repository.UsuarioRepository;
 import com.mongodb.lang.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -66,5 +70,9 @@ public class SalaService {
     // Servicio para asignar Sala a un residente
     public void asignarUsuario(@NonNull Usuario usuario, @NonNull Sala sala) {
 
+    }
+
+    public Page<Sala> getSalas(Pageable pageable) {
+        return salaRepository.findAll(pageable);
     }
 }

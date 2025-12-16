@@ -1,94 +1,184 @@
 <!DOCTYPE html>
 <html lang="es">
-
-<script>
-    const usuario = JSON.parse(localStorage.getItem("usuario"));
-    if (!usuario) {
-        window.location.href = "/login.html";
-    } else {
-        console.log("Bienvenido", usuario.nombre);
-    }
-</script>
-
-
 <head>
     <meta charset="UTF-8">
-    <title>Roomify - Gestión de Usuarios</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roomify App - Vue Edition</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        form, table { margin-bottom: 20px; }
-        table { border-collapse: collapse; width: 100%; }
-        td, th { border: 1px solid #ccc; padding: 8px; }
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.5s; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
     </style>
 </head>
 <body>
-<h1>Roomify 🏠</h1>
-<h2>Usuarios</h2>
 
-<form id="usuarioForm">
-    <input type="text" id="id" placeholder="ID" required>
-    <input type="text" id="nombre" placeholder="Nombre" required>
-    <input type="number" id="habitacion" placeholder="Habitación" required>
-    <input type="date" id="nacimiento" required>
-    <input type="number" id="telefono" placeholder="Teléfono" required>
-    <input type="text" id="rol" placeholder="Rol" required>
-    <button type="submit">Añadir usuario</button>
-</form>
+<div id="app" class="container py-5">
 
-<table id="usuariosTable">
-    <thead>
-    <tr><th>ID</th><th>Nombre</th><th>Habitación</th><th>Teléfono</th><th>Rol</th><th>Acciones</th></tr>
-    </thead>
-    <tbody></tbody>
-</table>
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h1 class="text-primary fw-bold">Roomify <span class="fs-5 text-secondary">Manager</span></h1>
+        <button v-if="token" @click="logout" class="btn btn-outline-danger btn-sm">Cerrar Sesión</button>
+    </div>
+
+    <div v-if="!token" class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card shadow border-0">
+                <div class="card-body p-4">
+                    <h4 class="card-title text-center mb-4">Bienvenido</h4>
+                    <form @submit.prevent="login">
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">ID de Usuario</label>
+                            <input v-model="credenciales.id" type="text" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Contraseña</label>
+                            <input v-model="credenciales.password" type="password" class="form-control" required>
+                        </div>
+                        <div v-if="error" class="alert alert-danger py-2 small">{{ error }}</div>
+                        <button type="submit" class="btn btn-primary w-100" :disabled="cargando">
+                            {{ cargando ? 'Entrando...' : 'Iniciar Sesión' }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div v-else>
+        <ul class="nav nav-pills mb-4">
+            <li class="nav-item">
+                <a class="nav-link active" href="#">Usuarios</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#">Salas (Próximamente)</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#">Reservas</a>
+            </li>
+        </ul>
+
+        <div class="d-flex justify-content-end mb-3">
+            <button @click="obtenerUsuarios" class="btn btn-success btn-sm">
+                <i class="bi bi-arrow-clockwise"></i> Refrescar Datos
+            </button>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Roles</th>
+                        <th>Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="usuario in usuarios" :key="usuario.id">
+                        <td>{{ usuario.id }}</td>
+                        <td>{{ usuario.nombre }}</td>
+                        <td>{{ usuario.email }}</td>
+                        <td>
+                            <span class="badge bg-info text-dark">{{ usuario.roles || 'USER' }}</span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-secondary" @click="verDetalle(usuario)">Ver</button>
+                        </td>
+                    </tr>
+                    <tr v-if="usuarios.length === 0">
+                        <td colspan="5" class="text-center py-4 text-muted">No hay usuarios cargados o disponibles.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
 
 <script>
-    const apiBase = 'http://localhost:8080/usuarios';
+    const { createApp } = Vue;
 
-    async function cargarUsuarios() {
-        const res = await fetch(apiBase);
-        if (!res.ok) return alert("Error al obtener usuarios");
-        const usuarios = await res.json();
-        const tbody = document.querySelector("#usuariosTable tbody");
-        tbody.innerHTML = "";
-        usuarios.forEach(u => {
-            tbody.innerHTML += `
-          <tr>
-            <td>${u.id}</td>
-            <td>${u.nombre}</td>
-            <td>${u.habitacion}</td>
-            <td>${u.telefono}</td>
-            <td>${u.rol}</td>
-            <td><button onclick="eliminarUsuario('${u.id}')">🗑️</button></td>
-          </tr>`;
-        });
-    }
+    createApp({
+        data() {
+            return {
+                apiUrl: 'http://localhost:8080',
+                token: localStorage.getItem('jwtToken') || null,
+                credenciales: { id: '', password: '' },
+                usuarios: [],
+                error: null,
+                cargando: false
+            }
+        },
+        mounted() {
+            // Si ya tenemos token al abrir la pagina, cargamos los datos
+            if (this.token) {
+                this.obtenerUsuarios();
+            }
+        },
+        methods: {
+            async login() {
+                this.cargando = true;
+                this.error = null;
+                try {
+                    const res = await fetch(`${this.apiUrl}/auth/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(this.credenciales)
+                    });
 
-    async function eliminarUsuario(id) {
-        await fetch(`${apiBase}/${id}`, { method: "DELETE" });
-        cargarUsuarios();
-    }
+                    if (res.ok) {
+                        // Extraer el token del header Authorization
+                        const authHeader = res.headers.get('Authorization');
+                        if (authHeader) {
+                            this.token = authHeader.replace('Bearer ', '');
+                            localStorage.setItem('jwtToken', this.token);
+                            this.credenciales = { id: '', password: '' }; // Limpiar form
+                            this.obtenerUsuarios();
+                        }
+                    } else {
+                        this.error = "Credenciales incorrectas";
+                    }
+                } catch (e) {
+                    this.error = "Error de conexión con el servidor";
+                } finally {
+                    this.cargando = false;
+                }
+            },
 
-    document.getElementById("usuarioForm").addEventListener("submit", async e => {
-        e.preventDefault();
-        const data = {
-            id: id.value,
-            nombre: nombre.value,
-            habitacion: parseInt(habitacion.value),
-            nacimiento: nacimiento.value,
-            telefono: parseInt(telefono.value),
-            rol: rol.value
-        };
-        await fetch(apiBase, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
-        });
-        e.target.reset();
-        cargarUsuarios();
-    });
+            async obtenerUsuarios() {
+                try {
+                    const res = await fetch(`${this.apiUrl}/usuarios?page=0&size=20`, {
+                        headers: { 'Authorization': `Bearer ${this.token}` }
+                    });
 
-    cargarUsuarios();
+                    if (res.status === 403 || res.status === 401) {
+                        this.logout();
+                        return;
+                    }
+
+                    const data = await res.json();
+                    this.usuarios = data.content; // Asumiendo que devuelve un Page<>
+                } catch (e) {
+                    console.error("Error al cargar usuarios", e);
+                }
+            },
+
+            logout() {
+                this.token = null;
+                this.usuarios = [];
+                localStorage.removeItem('jwtToken');
+            },
+
+            verDetalle(usuario) {
+                alert(`Detalles de: ${usuario.nombre}`);
+            }
+        }
+    }).mount('#app');
 </script>
+
 </body>
 </html>

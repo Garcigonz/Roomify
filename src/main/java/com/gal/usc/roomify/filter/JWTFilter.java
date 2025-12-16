@@ -47,12 +47,10 @@ public class JWTFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } catch (JwtException e) {
-            // Si el token está mal o expirado, NO lanzamos error.
-            // Simplemente no autenticamos (limpiamos el contexto) y dejamos pasar.
-            // Spring Security bloqueará la petición más adelante si la ruta es privada.
+            // si el token está mal o expirado, no se autentica
             SecurityContextHolder.clearContext();
 
-            // System.out.println("Token inválido: " + e.getMessage());
+            //System.out.println("Token inválido: " + e.getMessage());
         }
 
         chain.doFilter(request, response);
