@@ -75,7 +75,7 @@ public class AuthenticationController {
             )
     })
     @PostMapping("/login")
-    public ResponseEntity<Void> login(
+    public ResponseEntity<UsuarioResponse> login(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Credenciales del usuario",
                     required = true,
@@ -199,7 +199,7 @@ public class AuthenticationController {
     })
     @PostMapping("refresh")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> refresh(
+    public ResponseEntity<UsuarioResponse> refresh(
             @Parameter(
                     description = "Refresh token enviado en cookie",
                     required = true
@@ -270,19 +270,15 @@ public class AuthenticationController {
         throw new RuntimeException("Internal Error");
     }
 
-    /**
-     * Genera una respuesta HTTP con los tokens de autenticación.
-     *
-     * Crea un JWT y un refresh token a partir de la autenticación proporcionada,
-     * y los incluye en la respuesta: el JWT en el header Authorization y el
-     * refresh token en una cookie HTTP-only segura.
-     *
-     * @param auth Objeto de autenticación del usuario
-     * @return ResponseEntity con código 204 y los tokens en los headers correspondientes
-     */
-    private ResponseEntity<Void> generarRespuestaConTokens(Authentication auth) {
+
+    // Genera una respuesta HTTP con los tokens de autenticación.
+    private ResponseEntity<UsuarioResponse> generarRespuestaConTokens(Authentication auth) {
         String token = authenticationService.generateJWT(auth);
         String refreshToken = authenticationService.regenerateRefreshToken(auth);
+
+        // Recuperamos los datos del usuario para enviarlos al frontend
+        Usuario usuario = (Usuario) auth.getPrincipal();
+        UsuarioResponse usuarioResponse = usuarioMapper.toResponse(usuario);
 
         String refreshPath = MvcUriComponentsBuilder.fromMethodName(AuthenticationController.class, "refresh", "").build().toUri().getPath();
 
@@ -294,10 +290,10 @@ public class AuthenticationController {
                 .maxAge(Duration.ofDays(7))
                 .build();
 
-        return ResponseEntity.noContent()
+        return ResponseEntity.ok() // Cambiado: de noContent() (204) a ok() (200)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .build();
+                .body(usuarioResponse); // Añadimos el cuerpo con los datos (nombre, email, etc.)
     }
 
 }

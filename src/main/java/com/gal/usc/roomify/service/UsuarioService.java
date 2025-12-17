@@ -38,8 +38,12 @@ public class UsuarioService {
             throw new UsuarioDuplicadoException(usuario);
         }
 
-        Role userRole = roleRepository.findByRolename("USER");
-        usuario.setRoles(Set.of(userRole));
+        if (usuario.getRoles() == null) {
+            usuario.setRoles(new HashSet<>());
+        }
+
+       // Role userRole = roleRepository.findByRolename("USER");
+        //usuario.setRoles(Set.of(userRole));
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
 
         return usuarioRepository.save(usuario);

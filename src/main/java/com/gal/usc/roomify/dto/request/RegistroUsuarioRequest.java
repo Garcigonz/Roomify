@@ -25,5 +25,5 @@ public record RegistroUsuarioRequest(
         @Past(message = "La fecha de nacimiento debe ser en el pasado")
         LocalDate nacimiento,
 
-        int telefono
+        Integer telefono
 ) {}

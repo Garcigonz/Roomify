@@ -8,7 +8,7 @@ public record UsuarioResponse(
         String nombre,
         String email,
         int habitacion,
-        int telefono,
+        Integer telefono,
         LocalDate nacimiento,
         Set<String> roles
 ) {}

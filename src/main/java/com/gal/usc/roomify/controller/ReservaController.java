@@ -1,6 +1,6 @@
 package com.gal.usc.roomify.controller;
 
-
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import com.gal.usc.roomify.exception.*;
 import com.gal.usc.roomify.model.Reserva;
 import com.gal.usc.roomify.repository.ReservaRepository;
@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.aggregation.StringOperators;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
@@ -141,7 +142,7 @@ public class ReservaController {
             )
     })
     @DeleteMapping("/{idReserva}")
-    public ResponseEntity<@NonNull Reserva> deleteReserva(@PathVariable String idReserva) {
+    public ResponseEntity<Void> deleteReserva(@PathVariable("idReserva") String idReserva) {
         try {
             reservaService.eliminarReserva(idReserva);
             return ResponseEntity.noContent().build();
@@ -213,6 +214,46 @@ public class ReservaController {
             return ResponseEntity.ok(reservaService.updateReserva(id, cambios));
         } catch (ReservaNoEncontradaException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+
+    @Operation(
+            summary = "Listar reservas de un usuario",
+            description = "Devuelve una lista completa con todas las reservas asociadas a un ID de usuario específico."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Listado de reservas obtenido correctamente",
+                    content = @Content(
+                            mediaType = "application/json",
+                            // Usamos @ArraySchema porque devolvemos una List<Reserva>, no una sola Reserva
+                            array = @ArraySchema(schema = @Schema(implementation = Reserva.class))
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "No tiene permisos para ver las reservas de este usuario"
+            )
+    })    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<List<Reserva>> getReservasUsuario(@PathVariable String usuarioId) {
+        return ResponseEntity.ok(reservaService.getReservasPorUsuario(usuarioId));
+    }
+
+    @Operation(summary = "Ampliar reserva", description = "Suma un número de horas a la hora de finalización actual.")
+    @PutMapping("/{id}/ampliar")
+    @PreAuthorize("@reservaRepository.findById(#id).get().usuario.id == authentication.name or hasRole('ADMIN')")
+    public ResponseEntity<Reserva> ampliarReserva(
+            @PathVariable String id,
+            @RequestParam int horas) {
+        try {
+            Reserva reserva = reservaService.ampliarReserva(id, horas);
+            return ResponseEntity.ok(reserva);
+        } catch (ReservaNoEncontradaException e) {
+            return ResponseEntity.notFound().build();
+        } catch (SalaOcupadaException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
 

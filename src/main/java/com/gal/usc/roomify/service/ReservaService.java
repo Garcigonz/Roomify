@@ -46,16 +46,13 @@ public class ReservaService {
     }
 
 
-    // Solo el responsable de la sala podrá hacer la reserva. O el ADMIN
     @PreAuthorize("#nuevaReserva.usuario().id == authentication.name OR hasRole('ADMIN')")
     // Servicio para añadir una nueva reserva a la base de datos
     public Reserva addReserva(Reserva nuevaReserva) throws ReservandoNoDisponibleException, UsuarioNoEncontradoException, UsuarioCastigadoException, SalaNoEncontradaException {
 
-        // validacion de sala
         Sala salaReal = salaRepository.findById(nuevaReserva.sala().getId())
                 .orElseThrow(() -> new SalaNoEncontradaException(nuevaReserva.sala().getId()));
 
-        // validar solapamiento
         List<Reserva> reservasConflictivas = reservaRepository.findBySalaIdAndHoraInicioBeforeAndHoraFinAfter(
                 salaReal.getId(),
                 nuevaReserva.horaFin(),
@@ -67,21 +64,17 @@ public class ReservaService {
             throw new ReservandoNoDisponibleException(nuevaReserva);
         }
 
-        // validar usuario
         Usuario usuarioReal = usuarioRepository.findById(nuevaReserva.usuario().getId())
                 .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
 
-        // 4. Validar Castigos (recuerda quitar el try-catch que tenías antes)
         long faltasCount = faltaRepository.countByCastigadoId(usuarioReal.getId());
         if(faltasCount >= 3) {
             throw new UsuarioCastigadoException(usuarioReal);
         }
 
-        // 5. Construir y guardar
-        // Usamos 'salaReal' y 'usuarioReal' para asegurar que guardamos datos completos y actualizados en la reserva
         Reserva reservaA_Guardar = new Reserva(
                 nuevaReserva.id(),
-                salaReal,       // <--- Aquí metemos la sala completa de la BD
+                salaReal,
                 nuevaReserva.horaInicio(),
                 nuevaReserva.horaFin(),
                 usuarioReal,
@@ -124,4 +117,38 @@ public class ReservaService {
             throw new ReservaNoEncontradaException(idReserva);
         }
     }
+
+    public List<Reserva> getReservasPorUsuario(String usuarioId) {
+        return reservaRepository.findByUsuarioId(usuarioId);
+    }
+
+    public Reserva ampliarReserva(String id, int horasExtra) throws ReservaNoEncontradaException {
+        Reserva reservaActual = reservaRepository.findById(id)
+                .orElseThrow(() -> new ReservaNoEncontradaException(id));
+
+        LocalDateTime inicioAmpliacion = reservaActual.horaFin();
+        LocalDateTime finAmpliacion = reservaActual.horaFin().plusHours(horasExtra);
+
+        List<Reserva> conflictos = reservaRepository.findBySalaIdAndHoraInicioBeforeAndHoraFinAfter(
+                reservaActual.sala().getId(),
+                finAmpliacion,
+                inicioAmpliacion
+        );
+
+        if (!conflictos.isEmpty()) {
+            throw new SalaOcupadaException("No se puede ampliar: La sala está reservada en ese horario.");
+        }
+
+        Reserva reservaAmpliada = new Reserva(
+                reservaActual.id(),
+                reservaActual.sala(),
+                reservaActual.horaInicio(),
+                finAmpliacion,
+                reservaActual.usuario(),
+                reservaActual.observaciones()
+        );
+
+        return reservaRepository.save(reservaAmpliada);
+    }
+
 }

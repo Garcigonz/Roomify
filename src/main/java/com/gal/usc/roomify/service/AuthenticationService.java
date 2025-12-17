@@ -45,10 +45,10 @@ public class AuthenticationService implements UserDetailsService {
     private final RoleRepository roleRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    @Value("${auth.jwt.ttl:PT15M}")
+    @Value("${auth.jwt.ttl:PT20M}")
     private Duration tokenTTL;
 
-    @Value("${auth.refresh.ttl:PT72H}")
+    @Value("${auth.refresh.ttl:PT1H}")
     private Duration refreshTTL;
 
     @Autowired

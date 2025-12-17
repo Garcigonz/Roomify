@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { AlertCircle, Check, LogIn, UserPlus, Home, DoorOpen, Users, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { AlertCircle, Check, LogIn, UserPlus, Home, DoorOpen, Users, Calendar, ChevronLeft, ChevronRight, Trash2, Clock, X, PlusCircle } from 'lucide-react';
 
 const API_URL = 'http://localhost:8080';
 
@@ -21,7 +21,7 @@ function App() {
     const [view, setView] = useState('login');
     const [dashboardView, setDashboardView] = useState('salas');
     const [authToken, setAuthToken] = useState(null);
-    const [user, setUser] = useState(null); // Ahora guardará { id, role }
+    const [user, setUser] = useState(null);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
@@ -30,6 +30,10 @@ function App() {
     const [salasPage, setSalasPage] = useState(0);
     const [salasTotalPages, setSalasTotalPages] = useState(0);
     const [loading, setLoading] = useState(false);
+
+    // Estados para reservas
+    const [misReservas, setMisReservas] = useState([]);
+    const [loadingReservas, setLoadingReservas] = useState(false);
 
     // Estados para formularios
     const [loginData, setLoginData] = useState({ id: '', password: '' });
@@ -43,8 +47,8 @@ function App() {
         nacimiento: ''
     });
 
-    // 2. Lógica para determinar si es admin
-    // Ajusta 'ROLE_ADMIN' o 'ADMIN' según cómo lo devuelva tu backend en el token
+    const [salaSeleccionada, setSalaSeleccionada] = useState(null);
+
     const isAdmin = user?.role === 'ADMIN' || user?.role === 'ROLE_ADMIN' || (Array.isArray(user?.role) && user.role.includes('ROLE_ADMIN'));
 
     const handleLogin = async (e) => {
@@ -64,19 +68,11 @@ function App() {
                 const authHeader = response.headers.get('Authorization');
                 if (authHeader) {
                     const token = authHeader.replace('Bearer ', '');
-
-                    // 3. Decodificamos el token para obtener el rol
                     const decodedToken = parseJwt(token);
                     const userRole = decodedToken?.role || decodedToken?.roles || decodedToken?.authorities || 'USER';
 
                     setAuthToken(token);
-
-                    // Guardamos ID y ROL
-                    setUser({
-                        id: loginData.id,
-                        role: userRole
-                    });
-
+                    setUser({ id: loginData.id, role: userRole });
                     setSuccess('¡Inicio de sesión exitoso!');
                     setTimeout(() => setView('dashboard'), 1000);
                 }
@@ -94,7 +90,6 @@ function App() {
         e.preventDefault();
         setError('');
         setSuccess('');
-
         try {
             const response = await fetch(`${API_URL}/auth/register`, {
                 method: 'POST',
@@ -102,12 +97,11 @@ function App() {
                 body: JSON.stringify({
                     ...registerData,
                     habitacion: parseInt(registerData.habitacion),
-                    telefono: parseInt(registerData.telefono)
+                    telefono: registerData.telefono ? parseInt(registerData.telefono) : null
                 })
             });
 
             if (response.status === 201) {
-                const userData = await response.json();
                 setSuccess('¡Registro exitoso! Ahora puedes iniciar sesión');
                 setTimeout(() => {
                     setView('login');
@@ -134,7 +128,6 @@ function App() {
         } catch (err) {
             console.error('Error al cerrar sesión:', err);
         }
-
         setAuthToken(null);
         setUser(null);
         setView('login');
@@ -142,16 +135,118 @@ function App() {
         setLoginData({ id: '', password: '' });
     };
 
+    // 🔴 RESTAURADA: Función inteligente para tokens y refresh
+    const authenticatedFetch = async (endpoint, options = {}) => {
+        const headers = {
+            'Content-Type': 'application/json',
+            ...options.headers,
+            'Authorization': `Bearer ${authToken}`
+        };
+
+        let response = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
+
+        if (response.status === 401) {
+            console.log("Token caducado. Intentando refrescar...");
+            try {
+                const refreshResponse = await fetch(`${API_URL}/auth/refresh`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                if (refreshResponse.ok) {
+                    const newAuthHeader = refreshResponse.headers.get('Authorization');
+                    const newToken = newAuthHeader.replace('Bearer ', '');
+                    setAuthToken(newToken);
+
+                    // Reintentar petición original
+                    headers['Authorization'] = `Bearer ${newToken}`;
+                    response = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
+                } else {
+                    handleLogout();
+                    throw new Error("Sesión expirada");
+                }
+            } catch (error) {
+                handleLogout();
+                throw error;
+            }
+        }
+        return response;
+    };
+
+    const handleCrearReserva = async (e, formData) => {
+        e.preventDefault();
+        setError('');
+        setSuccess('');
+
+        try {
+            const payload = {
+                sala: { id: salaSeleccionada.id },
+                usuario: { id: user.id },
+                horaInicio: formData.horaInicio,
+                horaFin: null,
+                observaciones: formData.observaciones
+            };
+
+            // Usamos authenticatedFetch
+            const response = await authenticatedFetch(`/reservas`, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+
+            if (response.status === 201) {
+                setSuccess('¡Reserva creada con éxito! (Duración: 3h)');
+                setSalaSeleccionada(null);
+                fetchMisReservas();
+                fetchSalas(salasPage);
+                setTimeout(() => setSuccess(''), 3000);
+            } else if (response.status === 409) {
+                setError('Conflicto: Sala ocupada o usuario castigado.');
+            } else {
+                setError('Error al crear la reserva.');
+            }
+        } catch (err) {
+            setError('Error de conexión con el servidor');
+        }
+    };
+
+    const handleAmpliarReserva = async (idReserva) => {
+        const input = window.prompt("¿Cuántas horas quieres ampliar la reserva?");
+        if (!input) return;
+
+        const horas = parseInt(input);
+        if (isNaN(horas) || horas <= 0) {
+            setError("Por favor, introduce un número válido de horas.");
+            return;
+        }
+
+        setError('');
+        setSuccess('');
+
+        try {
+            const response = await authenticatedFetch(`/reservas/${idReserva}/ampliar?horas=${horas}`, {
+                method: 'PUT'
+            });
+
+            if (response.ok) {
+                setSuccess(`¡Reserva ampliada ${horas} hora(s) correctamente!`);
+                fetchMisReservas();
+                setTimeout(() => setSuccess(''), 3000);
+            } else if (response.status === 409) {
+                setError('No se puede ampliar: La sala está reservada por otra persona justo después.');
+            } else {
+                setError('Error al intentar ampliar la reserva.');
+            }
+        } catch (err) {
+            setError('Error de conexión con el servidor.');
+        }
+    };
+
     const fetchSalas = async (page = 0) => {
         setLoading(true);
         setError('');
         try {
-            const response = await fetch(`${API_URL}/salas?page=${page}&size=9&sort=id`, {
-                headers: {
-                    'Authorization': `Bearer ${authToken}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+            // Usamos authenticatedFetch
+            const response = await authenticatedFetch(`/salas?page=${page}&size=9&sort=id`);
 
             if (response.ok) {
                 const data = await response.json();
@@ -168,11 +263,62 @@ function App() {
         setLoading(false);
     };
 
+    const fetchMisReservas = async () => {
+        if (!user?.id) return;
+
+        setLoadingReservas(true);
+        setError('');
+        try {
+            // Usamos authenticatedFetch
+            const response = await authenticatedFetch(`/reservas/usuario/${user.id}`);
+
+            if (response.ok) {
+                const data = await response.json();
+                setMisReservas(data);
+            } else {
+                if (response.status !== 401) setError('No se pudieron cargar tus reservas.');
+            }
+        } catch (err) {
+            if (err.message !== "Sesión expirada") setError(`Error de conexión: ${err.message}`);
+        }
+        setLoadingReservas(false);
+    };
+
+    const handleCancelarReserva = async (idReserva) => {
+        if (!window.confirm('¿Seguro que quieres cancelar esta reserva?')) return;
+
+        try {
+            // Usamos authenticatedFetch
+            const response = await authenticatedFetch(`/reservas/${idReserva}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok || response.status === 204) {
+                setSuccess('Reserva cancelada correctamente');
+                fetchMisReservas();
+                setTimeout(() => setSuccess(''), 3000);
+            } else {
+                setError('No se pudo cancelar la reserva');
+            }
+        } catch (err) {
+            setError('Error al conectar con el servidor');
+        }
+    };
+
     useEffect(() => {
-        if (authToken && view === 'dashboard' && dashboardView === 'salas') {
-            fetchSalas(0);
+        if (authToken && view === 'dashboard') {
+            if (dashboardView === 'salas') {
+                fetchSalas(0);
+            } else if (dashboardView === 'reservas') {
+                fetchMisReservas();
+            }
         }
     }, [authToken, view, dashboardView]);
+
+    useEffect(() => {
+        setError('');
+        setSuccess('');
+    }, [view, dashboardView]);
 
     if (view === 'dashboard') {
         return (
@@ -186,8 +332,6 @@ function App() {
                         <div className="flex items-center gap-4">
                             <span className="text-gray-700">
                                 Hola, <span className="font-semibold">{user?.id}</span>
-                                {/* Opcional: Mostrar rol para depurar */}
-                                {/* <span className="text-xs ml-2 bg-gray-200 px-2 py-1 rounded">{user?.role}</span> */}
                             </span>
                             <button
                                 onClick={handleLogout}
@@ -224,8 +368,6 @@ function App() {
                                 <Calendar className="w-5 h-5" />
                                 Reservas
                             </button>
-
-                            {/* 4. Renderizado Condicional del Botón Usuarios */}
                             {isAdmin && (
                                 <button
                                     onClick={() => setDashboardView('usuarios')}
@@ -296,7 +438,9 @@ function App() {
                                                     )}
                                                 </div>
 
-                                                <button className="w-full mt-4 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">
+                                                <button
+                                                    onClick={() => setSalaSeleccionada(sala)}
+                                                    className="w-full mt-4 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">
                                                     Reservar
                                                 </button>
                                             </div>
@@ -328,13 +472,108 @@ function App() {
                     )}
 
                     {dashboardView === 'reservas' && (
-                        <div className="bg-white rounded-lg shadow-lg p-8">
-                            <h2 className="text-3xl font-bold text-gray-800 mb-4">Mis Reservas</h2>
-                            <p className="text-gray-600">Próximamente...</p>
+                        <div>
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-3xl font-bold text-gray-800">Mis Reservas</h2>
+                            </div>
+
+                            {error && (
+                                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                                    <p className="text-red-800 text-sm">{error}</p>
+                                </div>
+                            )}
+                            {success && (
+                                <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2">
+                                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                                    <p className="text-green-800 text-sm">{success}</p>
+                                </div>
+                            )}
+
+                            {loadingReservas ? (
+                                <div className="text-center py-12">
+                                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                                    <p className="mt-4 text-gray-600">Cargando tus reservas...</p>
+                                </div>
+                            ) : misReservas.length === 0 ? (
+                                <div className="bg-white rounded-lg shadow p-8 text-center">
+                                    <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                                    <h3 className="text-lg font-medium text-gray-900">No tienes reservas activas</h3>
+                                    <p className="text-gray-500 mt-2">Ve a la sección de Salas para realizar una nueva reserva.</p>
+                                    <button
+                                        onClick={() => setDashboardView('salas')}
+                                        className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                                    >
+                                        Ver Salas
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {misReservas.map((reserva) => {
+                                        const inicio = new Date(reserva.horaInicio);
+                                        const fin = new Date(reserva.horaFin);
+
+                                        return (
+                                            <div key={reserva.id} className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-indigo-500 hover:shadow-xl transition">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div>
+                                                        <h3 className="text-lg font-bold text-gray-800">
+                                                            {reserva.sala?.descripcion || "Sala desconocida"}
+                                                        </h3>
+                                                        <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full mt-1 inline-block">
+                                                            ID: {reserva.id.substring(reserva.id.length - 6)}...
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => handleAmpliarReserva(reserva.id)}
+                                                            className="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-full transition"
+                                                            title="Ampliar duración"
+                                                        >
+                                                            <PlusCircle className="w-5 h-5" />
+                                                        </button>
+
+                                                        <button
+                                                            onClick={() => handleCancelarReserva(reserva.id)}
+                                                            className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-full transition"
+                                                            title="Cancelar reserva"
+                                                        >
+                                                            <Trash2 className="w-5 h-5" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    <div className="flex items-center gap-3 text-gray-700">
+                                                        <Calendar className="w-4 h-4 text-gray-400" />
+                                                        <span className="text-sm font-medium">
+                                                            {inicio.toLocaleDateString()}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-3 text-gray-700">
+                                                        <Clock className="w-4 h-4 text-gray-400" />
+                                                        <span className="text-sm">
+                                                            {inicio.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} -
+                                                            {fin.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                    </div>
+
+                                                    {reserva.observaciones && (
+                                                        <div className="mt-3 p-3 bg-gray-50 rounded text-sm text-gray-600 italic">
+                                                            "{reserva.observaciones}"
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     )}
 
-                    {/* 5. Protección de la Vista de Usuarios */}
                     {dashboardView === 'usuarios' && isAdmin && (
                         <div className="bg-white rounded-lg shadow-lg p-8">
                             <h2 className="text-3xl font-bold text-gray-800 mb-4">Gestión de Usuarios</h2>
@@ -342,14 +581,21 @@ function App() {
                         </div>
                     )}
                 </div>
+                {/* MODAL DE RESERVA */}
+                {salaSeleccionada && (
+                    <ModalReserva
+                        sala={salaSeleccionada}
+                        onClose={() => setSalaSeleccionada(null)}
+                        onSubmit={handleCrearReserva}
+                    />
+                )}
             </div>
         );
     }
 
-    // ... (El resto del código de Login/Registro se mantiene igual)
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-            {/* ... Renderizado del Login y Registro igual que antes ... */}
+            {/* ... Login/Register ... */}
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-full mb-4">
@@ -410,5 +656,99 @@ function App() {
         </div>
     );
 }
+
+const ModalReserva = ({ sala, onClose, onSubmit }) => {
+    // Calculamos la hora actual para el valor por defecto
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    const defaultStart = now.toISOString().slice(0, 16);
+
+    const [formData, setFormData] = useState({
+        horaInicio: defaultStart,
+        observaciones: ''
+    });
+
+    const calcularHoraFin = () => {
+        if (!formData.horaInicio) return '--:--';
+        const start = new Date(formData.horaInicio);
+        const end = new Date(start.getTime() + 3 * 60 * 60 * 1000); // +3 horas en milisegundos
+        return end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+                <div className="bg-indigo-600 p-4 flex justify-between items-center text-white">
+                    <h3 className="font-bold text-lg flex items-center gap-2">
+                        <Calendar className="w-5 h-5" />
+                        Reservar Sala
+                    </h3>
+                    <button onClick={onClose} className="hover:bg-indigo-700 p-1 rounded transition">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+
+                <div className="p-6">
+                    <div className="mb-4 bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+                        <p className="text-sm text-indigo-800 font-semibold">{sala.descripcion}</p>
+                        <p className="text-xs text-indigo-600">Aforo: {sala.aforo} personas</p>
+                    </div>
+
+                    <form onSubmit={(e) => onSubmit(e, formData)}>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Hora de Inicio</label>
+                                <input
+                                    type="datetime-local"
+                                    required
+                                    value={formData.horaInicio}
+                                    onChange={(e) => setFormData({...formData, horaInicio: e.target.value})}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 flex justify-between items-center">
+                                <div>
+                                    <p className="text-xs text-gray-500 font-medium uppercase">Duración Fija</p>
+                                    <p className="text-sm font-bold text-gray-800">3 Horas</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xs text-gray-500 font-medium uppercase">Hora Fin Estimada</p>
+                                    <p className="text-sm font-bold text-indigo-600">{calcularHoraFin()}</p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Observaciones</label>
+                                <textarea
+                                    rows="3"
+                                    value={formData.observaciones}
+                                    onChange={(e) => setFormData({...formData, observaciones: e.target.value})}
+                                    placeholder="Ej: Reunión de equipo..."
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+
+                            <div className="pt-2 flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium"
+                                >
+                                    Confirmar Reserva
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export default App;

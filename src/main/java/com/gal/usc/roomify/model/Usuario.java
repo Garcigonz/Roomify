@@ -32,7 +32,7 @@ public class Usuario implements UserDetails {
 
     private int habitacion;
     private LocalDate nacimiento;
-    private int telefono;
+    private Integer telefono;
 
     private String rol;
 
@@ -127,11 +127,11 @@ public class Usuario implements UserDetails {
         this.nacimiento = nacimiento;
     }
 
-    public int getTelefono() {
+    public Integer getTelefono() {
         return telefono;
     }
 
-    public void setTelefono(int telefono) {
+    public void setTelefono(Integer telefono) {
         this.telefono = telefono;
     }
 
